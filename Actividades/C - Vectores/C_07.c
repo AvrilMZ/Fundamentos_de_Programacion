@@ -1,6 +1,7 @@
 #include <stdio.h>
 #define MAX_NUMEROS 100
-// Aqui van las constantes...
+
+const char PROGRAMA_SIN_NOMBRE = '-';
 
 int numero_mas_chico(int numeros[MAX_NUMEROS], int tope_numeros) {
     // Aqui va tu código...
@@ -8,5 +9,5 @@ int numero_mas_chico(int numeros[MAX_NUMEROS], int tope_numeros) {
 
 char programa_ganador(char programas[MAX_NUMEROS], int tope_programas, int numeros[MAX_NUMEROS], int tope_numeros) {
     // Aqui va tu codigo…
-    // Deberias hacer una llamada a ´numero_mas_chico´.
+    numero_mas_chico();
 }
