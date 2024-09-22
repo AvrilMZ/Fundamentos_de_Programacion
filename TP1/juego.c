@@ -23,7 +23,7 @@ int main(){
             printf("Perdiste");
             return false;
         }
-    }
+    } 
 
     return 0;
 }
