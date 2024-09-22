@@ -69,36 +69,22 @@ typedef struct juego {
     int dinero;
 } juego_t;
 
-/*
- * Pre condiciones: -
- * Post condiciones: Inicializará el juego, cargando toda la información inicial de Linguini, las
- * mesas, las herramientas y los obstáculos.
- */
+// PRE: -
+// POST: Inicializará el juego, cargando toda la información inicial de Linguini, las mesas, las herramientas y los obstáculos.
 void inicializar_juego(juego_t *juego);
 
-/*
- * Pre condiciones: El juego debe estar inicializado previamente con `inicializar_juego` y la acción
- * debe ser válida.
- * Post condiciones: Realizará la acción recibida por parámetro. Para este primer TP solo se
- * implementará el funcionamiento para mover al jugador y agarrar/soltar la mopa.
- */
+// PRE: El juego debe estar inicializado previamente con `inicializar_juego` y la acción debe ser válida.
+// POST: Realizará la acción recibida por parámetro. Para este primer TP solo se implementará el funcionamiento para mover al jugador y agarrar/soltar la mopa.
 void realizar_jugada(juego_t *juego, char accion);
 
-/*
- * Pre condiciones: El juego debe estar inicializado previamente con `inicializar_juego`.
- * Post condiciones: Imprime el juego por pantalla.
- */
+// PRE: El juego debe estar inicializado previamente con `inicializar_juego`.
+// POST: Imprime el juego por pantalla.
 void mostrar_juego(juego_t juego);
 
-/*
- * Pre condiciones: El juego deberá estar inicializado previamente con `inicializar_juego`
- * Post condiciones: Devuelve:
- * --> 1 si es ganado
- * --> -1 si es perdido
- * --> 0 si se sigue jugando
- * El juego se dará por ganado cuando se termina el día y se consiguieron las monedas necesarias.
- * Se dará por perdido si se termina el día y no se llegó al monto.
- */
+// PRE: El juego deberá estar inicializado previamente con `inicializar_juego`
+// POST: Devuelve: 1 si es ganado, -1 si es perdido, 0 si se sigue jugando.
+//       El juego se dará por ganado cuando se termina el día y se consiguieron las monedas necesarias.
+//       Se dará por perdido si se termina el día y no se llegó al monto.
 int estado_juego(juego_t juego);
 
 #endif /* __RESTAURANT_H__ */
