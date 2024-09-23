@@ -12,7 +12,7 @@ const int SABADO = 6;
 int dia_record(int usados[MAXIMOS_DIAS], int tope){
     int dia_ganador = -1;
     for (int i = 0; i < tope; i++){
-        if (usados[i] > usados[dia_ganador]){
+        if (usados[i] >= usados[dia_ganador]){
             dia_ganador = i;
         }
     }
