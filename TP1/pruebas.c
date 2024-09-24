@@ -60,7 +60,6 @@ void mostrar_juego(juego_t juego){
 
                     }
                 }  
-                
             }
 
             printf("| %c  ", contenido_posicion);
