@@ -5,13 +5,13 @@
 
 int main(){
     srand((unsigned)time(NULL));
-    juego_t *juego;
-    inicializar_juego(juego);
+    juego_t *juego = {0};
 
     while (true){
         char accion = ' ';
+        inicializar_juego(juego);
         mostrar_juego(*juego);
-        printf("Utilice W, S, A, D para moverse ó la O para interactuar con la mopa:\n");
+        printf("Ingrese un movimiento (W/S/A/D) ó interactue con la mopa (O):\n");
         scanf(" %c", &accion);
         realizar_jugada(juego, accion);
         
