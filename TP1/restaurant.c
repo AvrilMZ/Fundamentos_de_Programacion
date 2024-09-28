@@ -20,62 +20,13 @@ const char MESA = 'T';
 const char COCINA = 'C';
 const char VACIO = ' ';
 
+const int CANTIDAD_LUGARES_MESA_GRUPAL = 4;
 const int CANTIDAD_CHARCOS = 5;
 const int CANTIDAD_MONEDAS = 8;
 const int CANTIDAD_PATINES = 5;
 const int CANTIDAD_CUCARACHAS = 0;
 const int OBJETIVO_DINERO = 150000;
 const int MAX_MOVIMIENTOS = 200;
-
-// PRE: 
-// POST: Imprime por pantalla el terreno de juego con los elementos en sus posiciones.
-void inicializar_terreno(juego_t juego) {
-    for (int i = 0; i < MAX_FILAS; i++) {
-        for (int j = 0; j < MAX_COLUMNAS; j++) {
-            char contenido_posicion = VACIO;
-
-            if (juego.mozo.posicion.fil == i && juego.mozo.posicion.col == j) {
-                contenido_posicion = LINGUINI;
-            } else if (juego.cocina.posicion.fil == i && juego.cocina.posicion.col == j) {
-                contenido_posicion = COCINA;
-            } else {
-                for (int k = 0; k < juego.cantidad_obstaculos; k++) {
-                    if (juego.obstaculos[k].posicion.fil == i && juego.obstaculos[k].posicion.col == j) {
-                        switch (juego.obstaculos[k].tipo) {
-                            case CHARCO:
-                                contenido_posicion = CHARCO;
-                            break;
-                            case CUCARACHA:
-                                contenido_posicion = CUCARACHA;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            for (int k = 0; k < juego.cantidad_herramientas; k++){
-                if (juego.herramientas[k].posicion.fil == i && juego.herramientas[k].posicion.col == j){
-                    switch (juego.herramientas[k].tipo) {
-                        case MONEDA:
-                            contenido_posicion = MONEDA;
-                        break;
-                        case PATINES:
-                            contenido_posicion = PATINES;
-                        break;
-                        case MOPA:
-                            contenido_posicion = MOPA;
-                        break;
-
-                    }
-                }  
-            }
-
-            printf("| %c  ", contenido_posicion);
-        }
-        
-        printf("|\n");
-    }
-}
 
 // PRE: 
 // POST: Devuelve true si la posicion ya esta almacenada en el vector posiciones_ocupadas, de lo contrario devuelve false.
@@ -86,6 +37,79 @@ bool es_posicion_ocupada(coordenada_t posicion, coordenada_t posiciones_ocupadas
         }
     }
     return false;
+}
+
+// PRE: 
+// POST: 
+char buscar_herramienta(juego_t juego, int fila, int columna){
+    for (int i = 0; i < juego.cantidad_herramientas; i++) {
+        if (juego.herramientas[i].posicion.fil == fila && juego.herramientas[i].posicion.col == columna) {
+            switch (juego.herramientas[i].tipo) {
+                case MONEDA:
+                    return MONEDA;
+                case PATINES:
+                    return PATINES;
+                case MOPA:
+                    return MOPA;
+            }
+        }
+    }
+    return VACIO;
+}
+
+// PRE: 
+// POST: 
+char buscar_obstaculo(juego_t juego, int fila, int columna){
+    for (int i = 0; i < juego.cantidad_obstaculos; i++) {
+        if (juego.obstaculos[i].posicion.fil == fila && juego.obstaculos[i].posicion.col == columna) {
+            switch (juego.obstaculos[i].tipo) {
+                case CHARCO:
+                    return CHARCO;
+                case CUCARACHA:
+                    return CUCARACHA;
+            }
+        }
+    }
+    return VACIO;
+}
+
+// PRE: 
+// POST: 
+char obtener_contenido_posicion(juego_t juego, int fila, int columna){
+    if (juego.mozo.posicion.fil == fila && juego.mozo.posicion.col == columna) {
+        return LINGUINI;
+    }
+
+    if (juego.cocina.posicion.fil == fila && juego.cocina.posicion.col == columna) {
+        return COCINA;
+    }
+    
+    char herramienta = buscar_herramienta(juego, fila, columna);
+    if (herramienta != VACIO) {
+        return herramienta;
+    }
+
+    char obstaculo = buscar_obstaculo(juego, fila, columna);
+    if (obstaculo != VACIO) {
+        return obstaculo;
+    }
+
+    return VACIO;
+}
+
+// PRE: 
+// POST: 
+void inicializar_terreno(juego_t juego) {
+    for (int i = 0; i < MAX_FILAS; i++) {
+        for (int j = 0; j < MAX_COLUMNAS; j++) {
+            char contenido_posicion = VACIO;
+
+            contenido_posicion = obtener_contenido_posicion(juego, i, j);
+
+            printf("| %c  ", contenido_posicion);
+        }
+        printf("|\n");
+    }
 }
 
 // PRE: 
@@ -150,13 +174,42 @@ void inicializar_mesas_individuales(mesa_t mesas_individuales[], coordenada_t po
             mesas_individuales[i].posicion[0].fil = rand() % MAX_FILAS;
             mesas_individuales[i].posicion[0].col = rand() % MAX_COLUMNAS;
             intentos++;
-            if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return -1;
+            if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return;
         } while (es_posicion_ocupada(mesas_individuales[i].posicion[0], posiciones_ocupadas, *cantidad_posiciones_ocupadas));
 
         posiciones_ocupadas[*cantidad_posiciones_ocupadas] = mesas_individuales[i].posicion[0];
-        *cantidad_posiciones_ocupadas++;
+        (*cantidad_posiciones_ocupadas)++;
         printf(" %c", MESA);
     }
+}
+
+// PRE: 
+// POST: 
+bool es_posible_asignar_posiciones_restantes(mesa_t mesa, coordenada_t posicion_guia, coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas) {
+    coordenada_t posiciones[CANTIDAD_LUGARES_MESA_GRUPAL];
+    posiciones[0] = posicion_guia;
+
+    posiciones[1].fil = posicion_guia.fil; // Derecha
+    posiciones[1].col = posicion_guia.col + 1;
+
+    posiciones[2].fil = posicion_guia.fil + 1; // Abajo
+    posiciones[2].col = posicion_guia.col;
+
+    posiciones[3].fil = posicion_guia.fil + 1; // Abajo Derecha
+    posiciones[3].col = posicion_guia.col + 1;
+
+    for (int i = 0; i < CANTIDAD_LUGARES_MESA_GRUPAL; i++) {
+        if (es_posicion_ocupada(posiciones[i], posiciones_ocupadas, *cantidad_posiciones_ocupadas)) {
+            return false;
+        }
+    }
+
+    for (int i = 0; i < CANTIDAD_LUGARES_MESA_GRUPAL; i++) {
+        mesa.posicion[i] = posiciones[i];
+        posiciones_ocupadas[*cantidad_posiciones_ocupadas] = posiciones[i];
+        (*cantidad_posiciones_ocupadas)++;
+    }
+    return true;
 }
 
 // PRE: 
@@ -164,7 +217,7 @@ void inicializar_mesas_individuales(mesa_t mesas_individuales[], coordenada_t po
 //       nuevamente otra aleatoria.
 void inicializar_mesas_grupales(mesa_t mesas_grupales[], coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas) {
     for (int i = 0; i < MAX_MESAS_GRUPALES; i++) {
-        mesas_grupales[i].cantidad_lugares = 4;
+        mesas_grupales[i].cantidad_lugares = CANTIDAD_LUGARES_MESA_GRUPAL;
 
         coordenada_t posicion_guia;
         int intentos = 0;
@@ -172,48 +225,10 @@ void inicializar_mesas_grupales(mesa_t mesas_grupales[], coordenada_t posiciones
             posicion_guia.fil = rand() % (MAX_FILAS - 1);
             posicion_guia.col = rand() % (MAX_COLUMNAS - 1);
             intentos++;
-            if (intentos > ((MAX_FILAS * MAX_COLUMNAS) - (MAX_FILAS + MAX_COLUMNAS))) return -1;
+            if (intentos > ((MAX_FILAS * MAX_COLUMNAS) - (MAX_FILAS + MAX_COLUMNAS))) return;
         } while (es_posicion_ocupada(posicion_guia, posiciones_ocupadas, *cantidad_posiciones_ocupadas));
 
-        coordenada_t posicion_derecha;
-        posicion_derecha.fil = posicion_guia.fil;
-        posicion_derecha.col = posicion_guia.col + 1;
-
-        coordenada_t posicion_abajo;
-        posicion_abajo.fil = posicion_guia.fil - 1;
-        posicion_abajo.col = posicion_guia.col;
-
-        coordenada_t posicion_abajo_derecha;
-        posicion_abajo_derecha.fil = posicion_guia.fil - 1;
-        posicion_abajo_derecha.col = posicion_guia.col + 1;
-        
-        while (es_posicion_ocupada(posicion_derecha, posiciones_ocupadas, *cantidad_posiciones_ocupadas) ||
-               es_posicion_ocupada(posicion_abajo, posiciones_ocupadas, *cantidad_posiciones_ocupadas) ||
-               es_posicion_ocupada(posicion_abajo_derecha, posiciones_ocupadas, *cantidad_posiciones_ocupadas)) {
-            
-            do {
-                posicion_guia.fil = rand() % (MAX_FILAS - 1);
-                posicion_guia.col = rand() % (MAX_COLUMNAS - 1);
-            } while (es_posicion_ocupada(posicion_guia, posiciones_ocupadas, *cantidad_posiciones_ocupadas));
-
-            posicion_derecha.fil = posicion_guia.fil;
-            posicion_derecha.col = posicion_guia.col + 1;
-
-            posicion_abajo.fil = posicion_guia.fil + 1;
-            posicion_abajo.col = posicion_guia.col;
-
-            posicion_abajo_derecha.fil = posicion_guia.fil + 1;
-            posicion_abajo_derecha.col = posicion_guia.col + 1;
-        }
-
-        mesas_grupales[i].posicion[0] = posicion_guia;
-        mesas_grupales[i].posicion[1] = posicion_derecha;
-        mesas_grupales[i].posicion[2] = posicion_abajo;
-        mesas_grupales[i].posicion[3] = posicion_abajo_derecha;
-
-        for (int j = 0; j < mesas_grupales[i].cantidad_lugares; j++) {
-            posiciones_ocupadas[*cantidad_posiciones_ocupadas] = mesas_grupales[i].posicion[j];
-            *cantidad_posiciones_ocupadas++;
+        if (es_posible_asignar_posiciones_restantes(mesas_grupales[i], posicion_guia, posiciones_ocupadas, cantidad_posiciones_ocupadas)) {
             printf(" %c", MESA);
         }
     }
@@ -228,11 +243,11 @@ void inicializar_linguini(juego_t *juego, coordenada_t posiciones_ocupadas[], in
         juego->mozo.posicion.fil = rand() % MAX_FILAS;
         juego->mozo.posicion.col = rand() % MAX_COLUMNAS;
         intentos++;
-        if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return -1;
+        if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return;
     } while (es_posicion_ocupada(juego->mozo.posicion, posiciones_ocupadas, *cantidad_posiciones_ocupadas));
 
     posiciones_ocupadas[*cantidad_posiciones_ocupadas] = juego->mozo.posicion;
-    *cantidad_posiciones_ocupadas++;
+    (*cantidad_posiciones_ocupadas)++;
     printf(" %c", LINGUINI);
 }
 
@@ -245,16 +260,17 @@ void inicializar_cocina(juego_t *juego, coordenada_t posiciones_ocupadas[], int*
         juego->cocina.posicion.fil = rand() % MAX_FILAS;
         juego->cocina.posicion.col = rand() % MAX_COLUMNAS;
         intentos++;
-        if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return -1;
+        if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return;
     } while (es_posicion_ocupada(juego->cocina.posicion, posiciones_ocupadas, *cantidad_posiciones_ocupadas));
 
     posiciones_ocupadas[*cantidad_posiciones_ocupadas] = juego->cocina.posicion;
-    *cantidad_posiciones_ocupadas++;
+    (*cantidad_posiciones_ocupadas)++;
     printf(" %c", COCINA);
 }
 
-//RESVISAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-void inicializar_herramienta(juego_t *juego, int tipo_herramienta, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
+// PRE: 
+// POST: 
+void inicializar_herramienta(juego_t *juego, char tipo_herramienta, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
     coordenada_t posicion;
     int intentos = 0;
 
@@ -262,96 +278,42 @@ void inicializar_herramienta(juego_t *juego, int tipo_herramienta, coordenada_t 
         posicion.fil = rand() % MAX_FILAS;
         posicion.col = rand() % MAX_COLUMNAS;
         intentos++;
-        if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return -1; 
+        if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return; 
     } while (es_posicion_ocupada(posicion, posiciones_ocupadas, *cantidad_posiciones_ocupadas));
 
-    juego->herramientas[*cantidad_posiciones_ocupadas].tipo = tipo_herramienta;
-    juego->herramientas[*cantidad_posiciones_ocupadas].posicion = posicion;
+    juego->herramientas[juego->cantidad_herramientas].tipo = tipo_herramienta;
+    juego->herramientas[juego->cantidad_herramientas].posicion = posicion;
+    juego->cantidad_herramientas++;
 
     posiciones_ocupadas[*cantidad_posiciones_ocupadas] = posicion;
-    *cantidad_posiciones_ocupadas++;
+    (*cantidad_posiciones_ocupadas)++;
 }
 
-//RESVISAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// PRE: 
+// POST: 
 void inicializar_mopa(juego_t *juego, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
     inicializar_herramienta(juego, MOPA, posiciones_ocupadas, cantidad_posiciones_ocupadas);
 }
 
-//RESVISAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// PRE: 
+// POST: 
 void inicializar_monedas(juego_t *juego, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
     for (int i = 0; i < CANTIDAD_MONEDAS; i++) {
         inicializar_herramienta(juego, MONEDA, posiciones_ocupadas, cantidad_posiciones_ocupadas);
     }
 }
 
-//RESVISAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// PRE: 
+// POST: 
 void inicializar_patines(juego_t *juego, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
     for (int i = 0; i < CANTIDAD_PATINES; i++) {
         inicializar_herramienta(juego, PATINES, posiciones_ocupadas, cantidad_posiciones_ocupadas);
     }
 }
 
-
-
 // PRE: 
-// POST: Inicializa la mopa en una posicion aleatoria, si la posicion ya esta ocupada le asigna
-//       nuevamente otra aleatoria.
-void inicializar_mopa(juego_t *juego, coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas) {
-    juego->herramientas[0].tipo = MOPA;
-
-    int intentos = 0;
-    do {
-        juego->herramientas[0].posicion.fil = rand() % MAX_FILAS;
-        juego->herramientas[0].posicion.col = rand() % MAX_COLUMNAS;
-        intentos++;
-        if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return -1;
-    } while (es_posicion_ocupada(juego->herramientas[0].posicion, posiciones_ocupadas, *cantidad_posiciones_ocupadas));
-
-    posiciones_ocupadas[*cantidad_posiciones_ocupadas] = juego->herramientas[0].posicion;
-    *cantidad_posiciones_ocupadas++;
-    printf(" %c", MOPA);
-}
-
-// PRE: 
-// POST: Inicializa las monedas en posiciones aleatorias, si la posicion ya esta ocupada le asigna
-//       nuevamente otra aleatoria.
-void inicializar_monedas(juego_t *juego, coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas) {
-    int intentos = 0;
-    for (int i = 0; i < CANTIDAD_MONEDAS; i++) {
-        do {
-            juego->herramientas[i].posicion.fil  = rand() % MAX_FILAS;
-            juego->herramientas[i].posicion.col  = rand() % MAX_COLUMNAS;
-            intentos++;
-            if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return -1;
-        } while (es_posicion_ocupada(juego->herramientas[i].posicion, posiciones_ocupadas, *cantidad_posiciones_ocupadas));
-
-        posiciones_ocupadas[*cantidad_posiciones_ocupadas] = juego->herramientas[i].posicion;
-        *cantidad_posiciones_ocupadas++;
-        printf(" %c", MONEDA);
-    }
-}
-
-// PRE: 
-// POST: Inicializa los patines en posiciones aleatorias, si la posicion ya esta ocupada le asigna
-//       nuevamente otra aleatoria.
-void inicializar_patines(juego_t *juego, coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas) {
-    int intentos = 0;
-    for (int i = 0; i < CANTIDAD_PATINES; i++) {
-        do {
-            juego->herramientas[(CANTIDAD_MONEDAS - 1) + i].posicion.fil  = rand() % MAX_FILAS;
-            juego->herramientas[(CANTIDAD_MONEDAS - 1) + i].posicion.col  = rand() % MAX_COLUMNAS;
-            intentos++;
-            if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return -1;
-        } while (es_posicion_ocupada(juego->herramientas[(CANTIDAD_MONEDAS - 1) + i].posicion, posiciones_ocupadas, *cantidad_posiciones_ocupadas));
-
-        posiciones_ocupadas[*cantidad_posiciones_ocupadas] = juego->herramientas[(CANTIDAD_MONEDAS - 1) + i].posicion;
-        *cantidad_posiciones_ocupadas++;
-        printf(" %c", PATINES);
-    }
-}
-
-//RESVISAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-void inicializar_obstaculo(juego_t *juego, int tipo_obstaculo, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
+// POST: 
+void inicializar_obstaculo(juego_t *juego, char tipo_obstaculo, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
     coordenada_t posicion;
     int intentos = 0;
 
@@ -359,65 +321,30 @@ void inicializar_obstaculo(juego_t *juego, int tipo_obstaculo, coordenada_t posi
         posicion.fil = rand() % MAX_FILAS;
         posicion.col = rand() % MAX_COLUMNAS;
         intentos++;
-        if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return -1; 
+        if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return; 
     } while (es_posicion_ocupada(posicion, posiciones_ocupadas, *cantidad_posiciones_ocupadas));
 
-    juego->obstaculos[*cantidad_posiciones_ocupadas].tipo = tipo_obstaculo;
-    juego->obstaculos[*cantidad_posiciones_ocupadas].posicion = posicion;
+    juego->obstaculos[juego->cantidad_obstaculos].tipo = tipo_obstaculo;
+    juego->obstaculos[juego->cantidad_obstaculos].posicion = posicion;
+    juego->cantidad_obstaculos++;
 
     posiciones_ocupadas[*cantidad_posiciones_ocupadas] = posicion;
-    *cantidad_posiciones_ocupadas++;
+    (*cantidad_posiciones_ocupadas)++;
 }
 
-//RESVISAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// PRE: 
+// POST: 
 void inicializar_charcos(juego_t *juego, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
     for (int i = 0; i < CANTIDAD_CHARCOS; i++) {
         inicializar_obstaculo(juego, CHARCO, posiciones_ocupadas, cantidad_posiciones_ocupadas);
     }
 }
 
-//RESVISAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// PRE: 
+// POST: 
 void inicializar_cucarachas(juego_t *juego, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
     for (int i = 0; i < CANTIDAD_CUCARACHAS; i++) {
         inicializar_obstaculo(juego, CUCARACHA, posiciones_ocupadas, cantidad_posiciones_ocupadas);
-    }
-}
-
-// PRE: 
-// POST: Inicializa los charcos en posiciones aleatorias, si la posicion ya esta ocupada le asigna
-//       nuevamente otra aleatoria.
-void inicializar_charcos(juego_t *juego, coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas) {
-    int intentos = 0;
-    for (int i = 0; i < CANTIDAD_CHARCOS; i++) {
-        do {
-            juego->obstaculos[i].posicion.fil  = rand() % MAX_FILAS;
-            juego->obstaculos[i].posicion.col  = rand() % MAX_COLUMNAS;
-            intentos++;
-            if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return -1;
-        } while (es_posicion_ocupada(juego->obstaculos[i].posicion, posiciones_ocupadas, *cantidad_posiciones_ocupadas));
-
-        posiciones_ocupadas[*cantidad_posiciones_ocupadas] = juego->obstaculos[i].posicion;
-        *cantidad_posiciones_ocupadas++;
-        printf(" %c", CHARCO);
-    }
-}
-
-// PRE: 
-// POST: Inicializa las cucarachas en posiciones aleatorias, si la posicion ya esta ocupada le asigna
-//       nuevamente otra aleatoria.
-void inicializar_cucarachas(juego_t *juego, coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas) {
-    int intentos = 0;
-    for (int i = 0; i < CANTIDAD_CUCARACHAS; i++) {
-        do {
-            juego->obstaculos[(CANTIDAD_CHARCOS - 1) + i].posicion.fil  = rand() % MAX_FILAS;
-            juego->obstaculos[(CANTIDAD_CHARCOS - 1) + i].posicion.col  = rand() % MAX_COLUMNAS;
-            intentos++;
-            if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return -1;
-        } while (es_posicion_ocupada(juego->obstaculos[(CANTIDAD_CHARCOS - 1) + i].posicion, posiciones_ocupadas, *cantidad_posiciones_ocupadas));
-
-        posiciones_ocupadas[*cantidad_posiciones_ocupadas] = juego->obstaculos[(CANTIDAD_CHARCOS - 1) + i].posicion;
-        *cantidad_posiciones_ocupadas++;
-        printf(" %c", CUCARACHA);
     }
 }
 
@@ -454,7 +381,7 @@ bool manejar_mopa(juego_t *juego, coordenada_t posiciones_ocupadas[], int *canti
             if (es_posicion_ocupada(posicion_mopa, posiciones_ocupadas, *cantidad_posiciones_ocupadas) == false) {
                 juego->mozo.tiene_mopa = false;
                 posiciones_ocupadas[*cantidad_posiciones_ocupadas] = posicion_mopa;
-                *cantidad_posiciones_ocupadas++;
+                (*cantidad_posiciones_ocupadas)++;
             }
         }
         return true;
