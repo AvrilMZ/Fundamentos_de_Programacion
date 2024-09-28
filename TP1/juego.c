@@ -5,17 +5,28 @@
 
 int main(){
     srand((unsigned)time(NULL));
-    juego_t *juego = {0};
+    juego_t juego;
+    juego.cantidad_mesas = 0;
+    juego.cantidad_herramientas = 0;
+    juego.cantidad_obstaculos = 0;
+    juego.movimientos = 0;
+    juego.dinero = 0;
 
-    while (true){
-        char accion = ' ';
-        inicializar_juego(juego);
-        mostrar_juego(*juego);
+    inicializar_juego(&juego);
+
+    char accion = ' ';
+    while (estado_juego(juego) == 0){
+        mostrar_juego(juego);
+
+        if (juego.mozo.tiene_mopa == true){
+            printf("Tiene la mopa. ");
+        } else printf("No tiene la mopa. ");
+
         printf("Ingrese un movimiento (W/S/A/D) ó interactue con la mopa (O):\n");
         scanf(" %c", &accion);
-        realizar_jugada(juego, accion);
+        realizar_jugada(&juego, accion);
         
-        int estado = estado_juego(*juego);
+        int estado = estado_juego(juego);
         if (estado == 1){
             printf("¡Ganaste!");
             return false;
