@@ -13,28 +13,7 @@ int main(){
     juego.dinero = 0;
 
     inicializar_juego(&juego);
-
-    char accion = ' ';
-    while (estado_juego(juego) == 0){
-        mostrar_juego(juego);
-
-        if (juego.mozo.tiene_mopa == true){
-            printf("Tiene la mopa. ");
-        } else printf("No tiene la mopa. ");
-
-        printf("Ingrese un movimiento (W/S/A/D) ó interactue con la mopa (O):\n");
-        scanf(" %c", &accion);
-        realizar_jugada(&juego, accion);
-        
-        int estado = estado_juego(juego);
-        if (estado == 1){
-            printf("¡Ganaste!");
-            return false;
-        } else if (estado == -1){
-            printf("Perdiste");
-            return false;
-        }
-    } 
+    mostrar_juego(juego);
 
     return 0;
 }
