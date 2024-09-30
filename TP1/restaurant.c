@@ -28,8 +28,8 @@ const int CANTIDAD_CUCARACHAS = 0;
 const int OBJETIVO_DINERO = 150000;
 const int MAX_MOVIMIENTOS = 200;
 
-// PRE: 
-// POST: Devuelve true si la posicion ya esta almacenada en el vector posiciones_ocupadas, de lo contrario devuelve false.
+// PRE: 'cantidad_posiciones_ocupadas' no debe ser un valor negativo.
+// POST: Devuelve true si la posicion ya esta almacenada en el vector 'posiciones_ocupadas', de lo contrario devuelve false.
 bool es_posicion_ocupada(coordenada_t posicion, coordenada_t posiciones_ocupadas[], int cantidad_posiciones_ocupadas) {
     for (int i = 0; i < cantidad_posiciones_ocupadas; i++) {
         if (posiciones_ocupadas[i].fil == posicion.fil && posiciones_ocupadas[i].col == posicion.col) {
@@ -39,8 +39,8 @@ bool es_posicion_ocupada(coordenada_t posicion, coordenada_t posiciones_ocupadas
     return false;
 }
 
-// PRE: 
-// POST: 
+// PRE: 'juego' debe estar correctamente inicializado.
+// POST: Devuelve el carácter correspondiente a la herramienta encontrada en la posición dada.
 char buscar_herramienta(juego_t juego, int fila, int columna){
     for (int i = 0; i < juego.cantidad_herramientas; i++) {
         if (juego.herramientas[i].posicion.fil == fila && juego.herramientas[i].posicion.col == columna) {
@@ -57,8 +57,8 @@ char buscar_herramienta(juego_t juego, int fila, int columna){
     return VACIO;
 }
 
-// PRE: 
-// POST: 
+// PRE: 'juego' debe estar correctamente inicializado.
+// POST: Devuelve el carácter correspondiente a el obstáculo encontrado en la posición dada.
 char buscar_obstaculo(juego_t juego, int fila, int columna){
     for (int i = 0; i < juego.cantidad_obstaculos; i++) {
         if (juego.obstaculos[i].posicion.fil == fila && juego.obstaculos[i].posicion.col == columna) {
@@ -73,8 +73,8 @@ char buscar_obstaculo(juego_t juego, int fila, int columna){
     return VACIO;
 }
 
-// PRE: 
-// POST: 
+// PRE: 'juego' debe estar correctamente inicializado.
+// POST: Devuelve el carácter correspondiente al contenido en la posición.
 char obtener_contenido_posicion(juego_t juego, int fila, int columna){
     for (int i = 0; i < (MAX_MESAS_INDIVIDUALES + MAX_MESAS_GRUPALES); i++) {
         for (int j = 0; j < juego.mesas[i].cantidad_lugares; j++){
@@ -105,8 +105,8 @@ char obtener_contenido_posicion(juego_t juego, int fila, int columna){
     return VACIO;
 }
 
-// PRE: 
-// POST: 
+// PRE: 'juego' debe estar correctamente inicializado.
+// POST: Imprime cómo se visualizará el terreno de juego, mostrando el contenido de cada posición.
 void inicializar_terreno(juego_t juego) {
     for (int i = 0; i < MAX_FILAS; i++) {
         for (int j = 0; j < MAX_COLUMNAS; j++) {
@@ -118,70 +118,12 @@ void inicializar_terreno(juego_t juego) {
     }
 }
 
-/*
-// PRE: 
-// POST: 
-void pasillos_mesa_individual(coordenada_t mesa, coordenada_t posiciones_ocupadas_pasillos[], int* cantidad_posiciones_ocupadas_pasillos){
-    coordenada_t pasillo;
-    for (int i = -1; i <= 1; i++) {
-        for (int j = -1; j <= 1; j++) {
-            if (i != 0 || j != 0) {
-                pasillo.fil = mesa.fil + i;
-                pasillo.col = mesa.col + j;
-            
-                if (!es_posicion_ocupada(pasillo, posiciones_ocupadas_pasillos, *cantidad_posiciones_ocupadas_pasillos)) {
-                    posiciones_ocupadas_pasillos[*cantidad_posiciones_ocupadas_pasillos] = pasillo;
-                    (*cantidad_posiciones_ocupadas_pasillos)++;
-                }
-            }
-        }
-    }
-}
+// PRE: 'cantidad_posiciones_ocupadas_pasillos' no debe ser un valor negativo.
+// POST: Se asignan las posiciones de los pasillos alrededor de la mesa, chequeando que cada nueva posición no esté ocupada.
+void asignar_pasillos(coordenada_t mesa, coordenada_t posiciones_ocupadas_pasillos[], int* cantidad_posiciones_ocupadas_pasillos) {
+    *cantidad_posiciones_ocupadas_pasillos = 0;
 
-// PRE: 
-// POST: Inicializa todas las mesas individuales en una posicion aleatoria, si la posicion ya esta ocupada le asigna 
-//       nuevamente otra aleatoria.
-void inicializar_mesas_individuales(juego_t *juego, coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas, coordenada_t posiciones_ocupadas_pasillos[], int* cantidad_posiciones_ocupadas_pasillos) {
-    juego->cantidad_mesas = 0;
-    for (int i = 0; i < MAX_MESAS_INDIVIDUALES; i++) {
-        juego->mesas[i].cantidad_lugares = 1;
-        
-        int intentos = 0;
-        bool posicion_valida = true;
-        do {
-            juego->mesas[i].posicion[0].fil = rand() % MAX_FILAS;
-            juego->mesas[i].posicion[0].col = rand() % MAX_COLUMNAS;
-
-            if (es_posicion_ocupada(juego->mesas[i].posicion[0], posiciones_ocupadas, *cantidad_posiciones_ocupadas)) {
-                posicion_valida = false;
-            }
-
-            *cantidad_posiciones_ocupadas_pasillos = 0;
-            pasillos_mesa_individual(juego->mesas[i].posicion[0], posiciones_ocupadas_pasillos, cantidad_posiciones_ocupadas_pasillos);
-
-            for (int j = 0; j < *cantidad_posiciones_ocupadas_pasillos; j++) {
-                if (es_posicion_ocupada(posiciones_ocupadas_pasillos[j], posiciones_ocupadas, *cantidad_posiciones_ocupadas)) {
-                    posicion_valida = false;
-                }
-            }
-
-            intentos++;
-            if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return;
-        } while (!posicion_valida);
-
-        posiciones_ocupadas[*cantidad_posiciones_ocupadas] = juego->mesas[i].posicion[0];
-        (*cantidad_posiciones_ocupadas)++;
-
-        juego->cantidad_mesas++;
-    }
-}
-*/
-
-void pasillos_mesa_individual(coordenada_t mesa, coordenada_t posiciones_ocupadas_pasillos[], int* cantidad_posiciones_ocupadas_pasillos) {
-    *cantidad_posiciones_ocupadas_pasillos = 0; // Resetear el contador
-
-    // Definir posiciones de pasillo: todas las posiciones alrededor de la mesa
-    coordenada_t posibles_pasillos[8] = {
+    coordenada_t posicion_pasillos[8] = {
         {mesa.fil - 1, mesa.col - 1}, // Arriba Izquierda
         {mesa.fil - 1, mesa.col},     // Arriba
         {mesa.fil - 1, mesa.col + 1}, // Arriba Derecha
@@ -192,16 +134,15 @@ void pasillos_mesa_individual(coordenada_t mesa, coordenada_t posiciones_ocupada
         {mesa.fil + 1, mesa.col + 1}  // Abajo Derecha
     };
 
-    // Verificar si esas posiciones están ocupadas y agregarlas al vector de pasillos
     for (int i = 0; i < 8; i++) {
-        if (!es_posicion_ocupada(posibles_pasillos[i], posiciones_ocupadas_pasillos, *cantidad_posiciones_ocupadas_pasillos)) {
-            posiciones_ocupadas_pasillos[*cantidad_posiciones_ocupadas_pasillos] = posibles_pasillos[i];
+        if (!es_posicion_ocupada(posicion_pasillos[i], posiciones_ocupadas_pasillos, *cantidad_posiciones_ocupadas_pasillos)) {
+            posiciones_ocupadas_pasillos[*cantidad_posiciones_ocupadas_pasillos] = posicion_pasillos[i];
             (*cantidad_posiciones_ocupadas_pasillos)++;
         }
     }
 }
 
-// PRE: 
+// PRE: 'juego' debe estar correctamente inicializado. 'cantidad_posiciones_ocupadas' y 'cantidad_posiciones_ocupadas_pasillos' no deben ser un valor negativo.
 // POST: Inicializa todas las mesas individuales en una posición aleatoria, si la posición ya está ocupada le asigna nuevamente otra aleatoria.
 void inicializar_mesas_individuales(juego_t *juego, coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas, coordenada_t posiciones_ocupadas_pasillos[], int* cantidad_posiciones_ocupadas_pasillos) {
     juego->cantidad_mesas = 0;
@@ -215,11 +156,9 @@ void inicializar_mesas_individuales(juego_t *juego, coordenada_t posiciones_ocup
             juego->mesas[i].posicion[0].fil = rand() % MAX_FILAS;
             juego->mesas[i].posicion[0].col = rand() % MAX_COLUMNAS;
 
-            // Comprobar si la posición de la mesa está ocupada
             if (!es_posicion_ocupada(juego->mesas[i].posicion[0], posiciones_ocupadas, *cantidad_posiciones_ocupadas)) {
-                pasillos_mesa_individual(juego->mesas[i].posicion[0], posiciones_ocupadas_pasillos, cantidad_posiciones_ocupadas_pasillos);
+                asignar_pasillos(juego->mesas[i].posicion[0], posiciones_ocupadas_pasillos, cantidad_posiciones_ocupadas_pasillos);
                 
-                // Comprobar si todas las posiciones de pasillo están libres
                 posicion_valida = true;
                 for (int j = 0; j < *cantidad_posiciones_ocupadas_pasillos; j++) {
                     if (es_posicion_ocupada(posiciones_ocupadas_pasillos[j], posiciones_ocupadas, *cantidad_posiciones_ocupadas)) {
@@ -228,16 +167,14 @@ void inicializar_mesas_individuales(juego_t *juego, coordenada_t posiciones_ocup
                     }
                 }
             }
-
             intentos++;
             if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return;
         } while (!posicion_valida);
 
-        // Si la posición es válida, ocuparla
         posiciones_ocupadas[*cantidad_posiciones_ocupadas] = juego->mesas[i].posicion[0];
         (*cantidad_posiciones_ocupadas)++;
 
-        // Ocupar también las posiciones de pasillo
+        //RARO
         for (int j = 0; j < *cantidad_posiciones_ocupadas_pasillos; j++) {
             posiciones_ocupadas[*cantidad_posiciones_ocupadas] = posiciones_ocupadas_pasillos[j];
             (*cantidad_posiciones_ocupadas)++;
@@ -247,18 +184,8 @@ void inicializar_mesas_individuales(juego_t *juego, coordenada_t posiciones_ocup
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-// PRE: 
-// POST: 
+// PRE: -
+// POST: Asigna las coordenadas de las posiciones restantes de una mesa grupal a partir de 'posicion_guia'.
 void posiciones_restantes_mesa_grupal(coordenada_t posicion_guia, coordenada_t posiciones[]){
     posiciones[0] = posicion_guia;
 
@@ -272,8 +199,8 @@ void posiciones_restantes_mesa_grupal(coordenada_t posicion_guia, coordenada_t p
     posiciones[3].col = posicion_guia.col + 1;
 }
 
-// PRE: 
-// POST: 
+// PRE: 'juego' debe estar correctamente inicializado y 'cantidad_posiciones_ocupadas' no debe ser un valor negativo.
+// POST: Devuelve true si todas las posiciones restantes de la mesa grupal no están ocupadas. Devuelve false si al menos una de las posiciones está ocupada.
 bool es_posible_asignar_posiciones_restantes(juego_t *juego, coordenada_t posicion_guia, coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas) {
     coordenada_t posiciones[CANTIDAD_LUGARES_MESA_GRUPAL];
     posiciones_restantes_mesa_grupal(posicion_guia, posiciones);
@@ -287,8 +214,8 @@ bool es_posible_asignar_posiciones_restantes(juego_t *juego, coordenada_t posici
     return true;
 }
 
-// PRE: 
-// POST: 
+// PRE: 'juego' debe estar correctamente inicializado y 'cantidad_posiciones_ocupadas' no debe ser un valor negativo.
+// POST: Asigna las posiciones de la mesa grupal basándose en 'posicion_guia'.
 void asignar_posiciones_grupales(juego_t *juego, coordenada_t posicion_guia, coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas){
     coordenada_t posiciones[CANTIDAD_LUGARES_MESA_GRUPAL];
     posiciones_restantes_mesa_grupal(posicion_guia, posiciones);
@@ -302,112 +229,7 @@ void asignar_posiciones_grupales(juego_t *juego, coordenada_t posicion_guia, coo
     }
 }
 
-/*
-// PRE: 
-// POST: 
-void pasillos_mesa_grupal(coordenada_t mesa, coordenada_t posiciones_ocupadas_pasillos[], int* cantidad_posiciones_ocupadas_pasillos) {
-    *cantidad_posiciones_ocupadas_pasillos = 0;
-
-    for (int i = -1; i <= 1; i++) {
-        for (int j = -1; j <= 1; j++) {
-            if (i != 0 || j != 0) { 
-                coordenada_t pasillo;
-                pasillo.fil = mesa.fil + i;
-                pasillo.col = mesa.col + j;
-
-                if (!es_posicion_ocupada(pasillo, posiciones_ocupadas_pasillos, *cantidad_posiciones_ocupadas_pasillos)) {
-                    posiciones_ocupadas_pasillos[*cantidad_posiciones_ocupadas_pasillos] = pasillo;
-                    (*cantidad_posiciones_ocupadas_pasillos)++;
-                }
-            }
-        }
-    }
-
-    coordenada_t posiciones_restantes[CANTIDAD_LUGARES_MESA_GRUPAL];
-    posiciones_restantes_mesa_grupal(mesa, posiciones_restantes);
-
-    for (int i = 0; i < *cantidad_posiciones_ocupadas_pasillos; i++) {
-        bool es_restante = false;
-        for (int j = 0; j < CANTIDAD_LUGARES_MESA_GRUPAL; j++) {
-            if (posiciones_ocupadas_pasillos[i].fil == posiciones_restantes[j].fil && posiciones_ocupadas_pasillos[i].col == posiciones_restantes[j].col) {
-                es_restante = true;
-            }
-        }
-        if (es_restante) {
-            for (int k = i; k < *cantidad_posiciones_ocupadas_pasillos - 1; k++) {
-                posiciones_ocupadas_pasillos[k] = posiciones_ocupadas_pasillos[k + 1];
-            }
-            (*cantidad_posiciones_ocupadas_pasillos)--;
-        } else i++;
-    }
-}
-
-// PRE: 
-// POST: Inicializa todas las mesas grupales en una posicion aleatoria, si la posicion ya esta ocupada le asigna 
-//       nuevamente otra aleatoria.
-void inicializar_mesas_grupales(juego_t *juego, coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas, coordenada_t posiciones_ocupadas_pasillos[], int* cantidad_posiciones_ocupadas_pasillos) {
-    for (int i = 0; i < MAX_MESAS_GRUPALES; i++) {
-        coordenada_t posicion_guia;
-        bool posicion_valida = false;
-        int intentos = 0;
-
-        do {
-            posicion_guia.fil = rand() % (MAX_FILAS - 1);
-            posicion_guia.col = rand() % (MAX_COLUMNAS - 1);
-
-            if (!es_posicion_ocupada(posicion_guia, posiciones_ocupadas, *cantidad_posiciones_ocupadas)) {
-                *cantidad_posiciones_ocupadas_pasillos = 0;
-                pasillos_mesa_grupal(posicion_guia, posiciones_ocupadas_pasillos, cantidad_posiciones_ocupadas_pasillos);
-
-                bool pasillos_validos = true;
-                for (int j = 0; j < *cantidad_posiciones_ocupadas_pasillos; j++) {
-                    if (es_posicion_ocupada(posiciones_ocupadas_pasillos[j], posiciones_ocupadas, *cantidad_posiciones_ocupadas)) {
-                        pasillos_validos = false;
-                        break;
-                    }
-                }
-
-                if (pasillos_validos) {
-                    posicion_valida = true;
-                }
-            }
-
-            intentos++;
-            if (intentos > ((MAX_FILAS * MAX_COLUMNAS) - (MAX_FILAS + MAX_COLUMNAS))) return;
-        } while (!posicion_valida);
-
-        asignar_posiciones_grupales(juego, posicion_guia, posiciones_ocupadas, cantidad_posiciones_ocupadas);
-
-        juego->cantidad_mesas++;
-    }
-}
-*/
-
-void pasillos_mesa_grupal(coordenada_t mesa, coordenada_t posiciones_ocupadas_pasillos[], int* cantidad_posiciones_ocupadas_pasillos) {
-    *cantidad_posiciones_ocupadas_pasillos = 0; // Resetear el contador
-
-    // Definir posiciones de pasillo: todas las posiciones alrededor de la mesa grupal
-    coordenada_t posibles_pasillos[8] = {
-        {mesa.fil - 1, mesa.col - 1}, // Arriba Izquierda
-        {mesa.fil - 1, mesa.col},     // Arriba
-        {mesa.fil - 1, mesa.col + 1}, // Arriba Derecha
-        {mesa.fil, mesa.col - 1},     // Izquierda
-        {mesa.fil, mesa.col + 1},     // Derecha
-        {mesa.fil + 1, mesa.col - 1}, // Abajo Izquierda
-        {mesa.fil + 1, mesa.col},     // Abajo
-        {mesa.fil + 1, mesa.col + 1}  // Abajo Derecha
-    };
-
-    // Verificar si esas posiciones están ocupadas y agregarlas al vector de pasillos
-    for (int i = 0; i < 8; i++) {
-        if (!es_posicion_ocupada(posibles_pasillos[i], posiciones_ocupadas_pasillos, *cantidad_posiciones_ocupadas_pasillos)) {
-            posiciones_ocupadas_pasillos[*cantidad_posiciones_ocupadas_pasillos] = posibles_pasillos[i];
-            (*cantidad_posiciones_ocupadas_pasillos)++;
-        }
-    }
-}
-
-// PRE: 
+// PRE: 'juego' debe estar correctamente inicializado. 'cantidad_posiciones_ocupadas' y 'cantidad_posiciones_ocupadas_pasillos' no deben ser un valor negativo.
 // POST: Inicializa todas las mesas grupales en una posición aleatoria, si la posición ya está ocupada le asigna nuevamente otra aleatoria.
 void inicializar_mesas_grupales(juego_t *juego, coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas, coordenada_t posiciones_ocupadas_pasillos[], int* cantidad_posiciones_ocupadas_pasillos) {
     for (int i = 0; i < MAX_MESAS_GRUPALES; i++) {
@@ -419,11 +241,9 @@ void inicializar_mesas_grupales(juego_t *juego, coordenada_t posiciones_ocupadas
             posicion_guia.fil = rand() % (MAX_FILAS - 1);
             posicion_guia.col = rand() % (MAX_COLUMNAS - 1);
 
-            // Comprobar si la posición de la mesa está ocupada
             if (!es_posicion_ocupada(posicion_guia, posiciones_ocupadas, *cantidad_posiciones_ocupadas)) {
-                pasillos_mesa_grupal(posicion_guia, posiciones_ocupadas_pasillos, cantidad_posiciones_ocupadas_pasillos);
+                asignar_pasillos(posicion_guia, posiciones_ocupadas_pasillos, cantidad_posiciones_ocupadas_pasillos);
 
-                // Comprobar si todas las posiciones de pasillo están libres
                 posicion_valida = true;
                 for (int j = 0; j < *cantidad_posiciones_ocupadas_pasillos; j++) {
                     if (es_posicion_ocupada(posiciones_ocupadas_pasillos[j], posiciones_ocupadas, *cantidad_posiciones_ocupadas)) {
@@ -439,7 +259,7 @@ void inicializar_mesas_grupales(juego_t *juego, coordenada_t posiciones_ocupadas
 
         asignar_posiciones_grupales(juego, posicion_guia, posiciones_ocupadas, cantidad_posiciones_ocupadas);
 
-        // Ocupar también las posiciones de pasillo
+        //RARO
         for (int j = 0; j < *cantidad_posiciones_ocupadas_pasillos; j++) {
             posiciones_ocupadas[*cantidad_posiciones_ocupadas] = posiciones_ocupadas_pasillos[j];
             (*cantidad_posiciones_ocupadas)++;
@@ -449,19 +269,8 @@ void inicializar_mesas_grupales(juego_t *juego, coordenada_t posiciones_ocupadas
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-// PRE: 
-// POST: Inicializa al personaje en una posicion aleatoria, si la posicion ya esta ocupada le asigna
-//       nuevamente otra aleatoria.
+// PRE: 'juego' debe estar correctamente inicializado y 'cantidad_posiciones_ocupadas' no debe ser un valor negativo.
+// POST: Inicializa al personaje en una posicion aleatoria, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
 void inicializar_linguini(juego_t *juego, coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas) {
     juego->mozo.tiene_mopa = false;
 
@@ -477,9 +286,8 @@ void inicializar_linguini(juego_t *juego, coordenada_t posiciones_ocupadas[], in
     (*cantidad_posiciones_ocupadas)++;
 }
 
-// PRE: 
-// POST: Inicializa a la cocina en una posicion aleatoria, si la posicion ya esta ocupada le asigna
-//       nuevamente otra aleatoria.
+// PRE: 'juego' debe estar correctamente inicializado y 'cantidad_posiciones_ocupadas' no debe ser un valor negativo.
+// POST: Inicializa a la cocina en una posicion aleatoria, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
 void inicializar_cocina(juego_t *juego, coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas) {
     int intentos = 0;
     do {
@@ -493,8 +301,8 @@ void inicializar_cocina(juego_t *juego, coordenada_t posiciones_ocupadas[], int*
     (*cantidad_posiciones_ocupadas)++;
 }
 
-// PRE: 
-// POST: 
+// PRE: 'juego' debe estar correctamente inicializado, 'tipo_herramienta' debe ser un char valido para una herramienta y 'cantidad_posiciones_ocupadas' no debe ser un valor negativo.
+// POST: Inicializa una herramienta en una posicion aleatoria, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
 void inicializar_herramienta(juego_t *juego, char tipo_herramienta, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
     coordenada_t posicion;
     int intentos = 0;
@@ -514,30 +322,30 @@ void inicializar_herramienta(juego_t *juego, char tipo_herramienta, coordenada_t
     (*cantidad_posiciones_ocupadas)++;
 }
 
-// PRE: 
-// POST: 
+// PRE: 'juego' debe estar correctamente inicializado y 'cantidad_posiciones_ocupadas' no debe ser un valor negativo.
+// POST: Inicializa la mopa en una posicion aleatoria, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
 void inicializar_mopa(juego_t *juego, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
     inicializar_herramienta(juego, MOPA, posiciones_ocupadas, cantidad_posiciones_ocupadas);
 }
 
-// PRE: 
-// POST: 
+// PRE: 'juego' debe estar correctamente inicializado y 'cantidad_posiciones_ocupadas' no debe ser un valor negativo.
+// POST: Inicializa las monedas en posiciones aleatorias, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
 void inicializar_monedas(juego_t *juego, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
     for (int i = 0; i < CANTIDAD_MONEDAS; i++) {
         inicializar_herramienta(juego, MONEDA, posiciones_ocupadas, cantidad_posiciones_ocupadas);
     }
 }
 
-// PRE: 
-// POST: 
+// PRE: 'juego' debe estar correctamente inicializado y 'cantidad_posiciones_ocupadas' no debe ser un valor negativo.
+// POST: Inicializa los patines en posiciones aleatorias, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
 void inicializar_patines(juego_t *juego, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
     for (int i = 0; i < CANTIDAD_PATINES; i++) {
         inicializar_herramienta(juego, PATINES, posiciones_ocupadas, cantidad_posiciones_ocupadas);
     }
 }
 
-// PRE: 
-// POST: 
+// PRE: 'juego' debe estar correctamente inicializado, 'tipo_obstaculo' debe ser un char valido para una herramienta y 'cantidad_posiciones_ocupadas' no debe ser un valor negativo.
+// POST: Inicializa un obstáculo en una posicion aleatoria, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
 void inicializar_obstaculo(juego_t *juego, char tipo_obstaculo, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
     coordenada_t posicion;
     int intentos = 0;
@@ -557,22 +365,25 @@ void inicializar_obstaculo(juego_t *juego, char tipo_obstaculo, coordenada_t pos
     (*cantidad_posiciones_ocupadas)++;
 }
 
-// PRE: 
-// POST: 
+// PRE: 'juego' debe estar correctamente inicializado y 'cantidad_posiciones_ocupadas' no debe ser un valor negativo.
+// POST: Inicializa los charcos en posiciones aleatorias, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
 void inicializar_charcos(juego_t *juego, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
     for (int i = 0; i < CANTIDAD_CHARCOS; i++) {
         inicializar_obstaculo(juego, CHARCO, posiciones_ocupadas, cantidad_posiciones_ocupadas);
     }
 }
 
-// PRE: 
-// POST: 
+// PRE: 'juego' debe estar correctamente inicializado y 'cantidad_posiciones_ocupadas' no debe ser un valor negativo.
+// POST: Inicializa las cucarachas en posiciones aleatorias, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
 void inicializar_cucarachas(juego_t *juego, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
     for (int i = 0; i < CANTIDAD_CUCARACHAS; i++) {
         inicializar_obstaculo(juego, CUCARACHA, posiciones_ocupadas, cantidad_posiciones_ocupadas);
     }
 }
 
+// PRE: 'juego' debe estar correctamente inicializado y 'cantidad_posiciones_ocupadas' no debe ser un valor negativo.
+// POST: Si el mozo se encuentra en la posición de la mopa y no la tiene, la agarra y se elimina la posición. 
+//       Si el mozo tiene la mopa y la posición no está ocupada, deja la mopa.
 void manejar_mopa(juego_t *juego, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
     coordenada_t posicion_mopa = juego->mozo.posicion;
 
@@ -599,8 +410,8 @@ void manejar_mopa(juego_t *juego, coordenada_t posiciones_ocupadas[], int *canti
     }
 }
 
-// PRE: 
-// POST: 
+// PRE: 'juego' debe estar correctamente inicializado.
+// POST: Devuelve true si hay una mesa en la posición especificada, de lo contrario devuelve false.
 bool hay_mesa(juego_t *juego, int fila, int col){
     for (int i = 0; i < juego->cantidad_mesas; i++) {
         for (int j = 0; j < juego->mesas[i].cantidad_lugares; j++) {
@@ -612,8 +423,8 @@ bool hay_mesa(juego_t *juego, int fila, int col){
     return false;
 }
 
-// PRE: 
-// POST: 
+// PRE: 'juego' debe estar correctamente inicializado y la acción debe ser válida.
+// POST: Actualiza la posición del mozo si en la nueva posición no hay una mesa y posibilita la interaccion con la mopa.
 void realizar_movimiento(juego_t *juego, char accion){
     int nueva_fil = juego->mozo.posicion.fil;
     int nueva_col = juego->mozo.posicion.col;
