@@ -123,20 +123,33 @@ void inicializar_terreno(juego_t juego) {
 void asignar_pasillos(coordenada_t mesa, coordenada_t posiciones_ocupadas_pasillos[], int* cantidad_posiciones_ocupadas_pasillos) {
     *cantidad_posiciones_ocupadas_pasillos = 0;
 
-    coordenada_t posicion_pasillos[8] = {
-        {mesa.fil - 1, mesa.col - 1}, // Arriba Izquierda
-        {mesa.fil - 1, mesa.col},     // Arriba
-        {mesa.fil - 1, mesa.col + 1}, // Arriba Derecha
-        {mesa.fil, mesa.col - 1},     // Izquierda
-        {mesa.fil, mesa.col + 1},     // Derecha
-        {mesa.fil + 1, mesa.col - 1}, // Abajo Izquierda
-        {mesa.fil + 1, mesa.col},     // Abajo
-        {mesa.fil + 1, mesa.col + 1}  // Abajo Derecha
-    };
+    posiciones_ocupadas_pasillos[0].fil = mesa.fil - 1; // Arriba Izquierda
+    posiciones_ocupadas_pasillos[0].col = mesa.col - 1;
+
+    posiciones_ocupadas_pasillos[1].fil = mesa.fil - 1; // Arriba
+    posiciones_ocupadas_pasillos[1].col = mesa.col;
+
+    posiciones_ocupadas_pasillos[2].fil = mesa.fil - 1; // Arriba Derecha
+    posiciones_ocupadas_pasillos[2].col = mesa.col + 1;
+
+    posiciones_ocupadas_pasillos[3].fil = mesa.fil; // Izquierda
+    posiciones_ocupadas_pasillos[3].col = mesa.col - 1;
+
+    posiciones_ocupadas_pasillos[4].fil = mesa.fil; // Derecha
+    posiciones_ocupadas_pasillos[4].col = mesa.col + 1;
+
+    posiciones_ocupadas_pasillos[5].fil = mesa.fil + 1; // Abajo Izquierda
+    posiciones_ocupadas_pasillos[5].col = mesa.col - 1;
+
+    posiciones_ocupadas_pasillos[6].fil = mesa.fil + 1; // Abajo
+    posiciones_ocupadas_pasillos[6].col = mesa.col;
+
+    posiciones_ocupadas_pasillos[7].fil = mesa.fil + 1; // Abajo Derecha
+    posiciones_ocupadas_pasillos[7].col = mesa.col + 1;
 
     for (int i = 0; i < 8; i++) {
-        if (!es_posicion_ocupada(posicion_pasillos[i], posiciones_ocupadas_pasillos, *cantidad_posiciones_ocupadas_pasillos)) {
-            posiciones_ocupadas_pasillos[*cantidad_posiciones_ocupadas_pasillos] = posicion_pasillos[i];
+        if (!es_posicion_ocupada(posiciones_ocupadas_pasillos[i], posiciones_ocupadas_pasillos, *cantidad_posiciones_ocupadas_pasillos)) {
+            posiciones_ocupadas_pasillos[*cantidad_posiciones_ocupadas_pasillos] = posiciones_ocupadas_pasillos[i];
             (*cantidad_posiciones_ocupadas_pasillos)++;
         }
     }
