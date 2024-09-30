@@ -573,53 +573,30 @@ void inicializar_cucarachas(juego_t *juego, coordenada_t posiciones_ocupadas[], 
     }
 }
 
+void manejar_mopa(juego_t *juego, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
+    coordenada_t posicion_mopa = juego->mozo.posicion;
 
-// PRE: 
-// POST: Cambia el estado de cada herramienta si es que se interactura con la misma.
-void interaccion_herramientas(juego_t *juego, coordenada_t posiciones_ocupadas[], int* cantidad_posiciones_ocupadas) {
-    for (int i = 0; i < MAX_HERRAMIENTAS; i++) {
-        if (juego->mozo.posicion.fil == juego->herramientas[i].posicion.fil && juego->mozo.posicion.col == juego->herramientas[i].posicion.col) {
-            if (juego->herramientas[i].tipo == MONEDA) {
-                juego->dinero++;
+    if (juego->mozo.posicion.fil != juego->herramientas[0].posicion.fil || 
+        juego->mozo.posicion.col != juego->herramientas[0].posicion.col) {
+        return;
+    }
 
+    if (!juego->mozo.tiene_mopa) {
+        juego->mozo.tiene_mopa = true;
+        for (int i = 0; i < *cantidad_posiciones_ocupadas; i++) {
+            if (posiciones_ocupadas[i].fil == posicion_mopa.fil && 
+                posiciones_ocupadas[i].col == posicion_mopa.col) {
                 for (int j = i; j < *cantidad_posiciones_ocupadas - 1; j++) {
                     posiciones_ocupadas[j] = posiciones_ocupadas[j + 1];
                 }
                 (*cantidad_posiciones_ocupadas)--;
-            } else if (juego->herramientas[i].tipo == PATINES) {
-                juego->mozo.patines_puestos = true;
-            } else if (juego->herramientas[i].tipo == MOPA) {
-                //si se preciona la O que "juego->mozo.tiene_mopa = true;"
             }
         }
+    } else if (!es_posicion_ocupada(posicion_mopa, posiciones_ocupadas, *cantidad_posiciones_ocupadas)) {
+        juego->mozo.tiene_mopa = false;
+        posiciones_ocupadas[*cantidad_posiciones_ocupadas] = posicion_mopa;
+        (*cantidad_posiciones_ocupadas)++;
     }
-}
-
-//PRE: 
-//POST: Retorna true si el mozo interactuó con la mopa, ya sea para agarrarla o soltarla.
-//      Retorna false si el mozo no estaba en la misma posición que la mopa.
-bool es_posible_manejar_mopa(juego_t *juego, coordenada_t posiciones_ocupadas[], int *cantidad_posiciones_ocupadas) {
-    if (juego->mozo.posicion.fil == juego->herramientas[0].posicion.fil && juego->mozo.posicion.col == juego->herramientas[0].posicion.col) {
-        coordenada_t posicion_mopa = juego->mozo.posicion;
-        if (juego->mozo.tiene_mopa == false) {
-            juego->mozo.tiene_mopa = true;
-            for (int i = 0; i < *cantidad_posiciones_ocupadas; i++) {
-                if (posiciones_ocupadas[i].fil == posicion_mopa.fil && posiciones_ocupadas[i].col == posicion_mopa.col) {
-                    for (int j = i; j < *cantidad_posiciones_ocupadas - 1; j++) {
-                        posiciones_ocupadas[j] = posiciones_ocupadas[j + 1];
-                    }
-
-                    (*cantidad_posiciones_ocupadas)--;
-                }
-            }
-        } else if (!es_posicion_ocupada(posicion_mopa, posiciones_ocupadas, *cantidad_posiciones_ocupadas)) {
-            juego->mozo.tiene_mopa = false;
-            posiciones_ocupadas[*cantidad_posiciones_ocupadas] = posicion_mopa;
-            (*cantidad_posiciones_ocupadas)++;
-        }
-        return true;
-    }
-    return false;
 }
 
 // PRE: 
@@ -654,9 +631,11 @@ void realizar_movimiento(juego_t *juego, char accion){
         case IZQUIERDA:
             if (nueva_col > 0) nueva_col--;
         break;
-        //case MOPA:
-            //es_posible_manejar_mopa(juego, posiciones_ocupadas, cantidad_posiciones_ocupadas);
-        //break;
+        case MOPA:
+            if (!juego->mozo.tiene_mopa) {
+                juego->mozo.tiene_mopa = true;
+            } else juego->mozo.tiene_mopa = false;
+        break;
     }
 
     if ((nueva_fil != juego->mozo.posicion.fil || nueva_col != juego->mozo.posicion.col) && !hay_mesa(juego, nueva_fil, nueva_col)) {
@@ -679,6 +658,7 @@ void inicializar_juego(juego_t *juego) {
     inicializar_cocina(juego, posiciones_ocupadas, &cantidad_posiciones_ocupadas);
     inicializar_linguini(juego, posiciones_ocupadas, &cantidad_posiciones_ocupadas);
     inicializar_mopa(juego, posiciones_ocupadas, &cantidad_posiciones_ocupadas);
+    manejar_mopa(juego, posiciones_ocupadas, &cantidad_posiciones_ocupadas); // REVISAR
     inicializar_monedas(juego, posiciones_ocupadas, &cantidad_posiciones_ocupadas);
     inicializar_patines(juego, posiciones_ocupadas, &cantidad_posiciones_ocupadas);
     inicializar_charcos(juego, posiciones_ocupadas, &cantidad_posiciones_ocupadas);
