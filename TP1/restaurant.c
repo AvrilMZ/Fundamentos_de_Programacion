@@ -13,10 +13,9 @@
 #define PATINES 'P'
 #define CUCARACHA ' '
 #define MAX_MESAS_INDIVIDUALES 6
-#define PASILLO_MESA_INDIVIDUAL 8
+#define POSICIONES_PASILLO 8
 #define MAX_MESAS_GRUPALES 4
 #define CANTIDAD_LUGARES_MESA_GRUPAL 4
-#define PASILLO_MESA_GRUPAL 12
 
 const char LINGUINI = 'L';
 const char MESA = 'T';
@@ -43,9 +42,8 @@ coordenada_t posicion_aleatoria() {
 // POST: Devuelve una posicion aleatoria evitando la ultima fila y columna.
 coordenada_t posicion_aleatoria_mesa_grupal() {
     coordenada_t posicion;
-    do {
-        posicion = posicion_aleatoria();
-    } while (posicion.fil >= (MAX_FILAS - 1) || posicion.col >= (MAX_COLUMNAS - 1));
+    posicion.fil = rand() % (MAX_FILAS - 1);
+    posicion.col = rand() % (MAX_COLUMNAS - 1);
     return posicion;
 }
 
@@ -117,10 +115,10 @@ bool es_posicion_vacia_excepto_linguini(juego_t juego, coordenada_t posicion) {
     return true;
 }
 
-
 // PRE: 'juego' debe estar correctamente inicializado e 'indice_mesa' debe estar dentro del rango de mesas posibles.
 // POST: Se asignan las posiciones de los pasillos alrededor de la mesa, chequeando que cada nueva posición no esté ocupada.
-bool pasillos_libres_mesa_individual(juego_t juego, int indice_mesa, coordenada_t pasillo[]) {
+bool pasillos_libres(juego_t juego, int indice_mesa) {
+    coordenada_t pasillo[POSICIONES_PASILLO];
     coordenada_t mesa_guia = juego.mesas[indice_mesa].posicion[0];
     
     pasillo[0].fil = mesa_guia.fil - 1; // Arriba Izquierda
@@ -147,7 +145,7 @@ bool pasillos_libres_mesa_individual(juego_t juego, int indice_mesa, coordenada_
     pasillo[7].fil = mesa_guia.fil + 1; // Abajo Derecha
     pasillo[7].col = mesa_guia.col + 1;
 
-    for (int i = 0; i < PASILLO_MESA_INDIVIDUAL; i++) {
+    for (int i = 0; i < POSICIONES_PASILLO; i++) {
         if (hay_mesa(juego, pasillo[i])) return false;
     }
 
@@ -159,65 +157,19 @@ bool pasillos_libres_mesa_individual(juego_t juego, int indice_mesa, coordenada_
 void inicializar_mesa_individual(juego_t *juego) {
     for (int i = 0; i < MAX_MESAS_INDIVIDUALES; i++) {
         juego->mesas[i].cantidad_lugares = 1;
-        coordenada_t pasillo[PASILLO_MESA_INDIVIDUAL];
+        juego->mesas[i].cantidad_comensales = 0;
+        juego->mesas[i].paciencia = 0;
+        juego->mesas[i].pedido_tomado = false;
         int intentos = 0;
 
         do {
             juego->mesas[i].posicion[0] = posicion_aleatoria();
             intentos++;
             if (intentos >= (MAX_FILAS * MAX_COLUMNAS)) return;
-        } while (!es_posicion_vacia(*juego, juego->mesas[i].posicion[0]) || !pasillos_libres_mesa_individual(*juego, i, pasillo));
+        } while (!es_posicion_vacia(*juego, juego->mesas[i].posicion[0]) || !pasillos_libres(*juego, i));
 
         juego->cantidad_mesas++;
     }
-}
-
-// PRE: 'juego' debe estar correctamente inicializado e 'indice_mesa' debe estar dentro del rango de mesas posibles.
-// POST: Se asignan las posiciones de los pasillos alrededor de la mesa grupal, chequeando que cada nueva posición no esté ocupada.
-bool pasillos_libres_mesa_grupal(juego_t juego, int indice_mesa, coordenada_t pasillo[]) {
-    coordenada_t mesa_guia = juego.mesas[indice_mesa].posicion[0];
-
-    pasillo[0].fil = mesa_guia.fil - 1; // Arriba Izquierda
-    pasillo[0].col = mesa_guia.col - 1;
-
-    pasillo[1].fil = mesa_guia.fil - 1; // Arriba
-    pasillo[1].col = mesa_guia.col;
-
-    pasillo[2].fil = mesa_guia.fil - 1; // Arriba Derecha
-    pasillo[2].col = mesa_guia.col + 1;
-
-    pasillo[3].fil = mesa_guia.fil - 1; // Arriba Derecha Derecha
-    pasillo[3].col = mesa_guia.col + 2;
-
-    pasillo[4].fil = mesa_guia.fil; // Derecha Derecha
-    pasillo[4].col = mesa_guia.col + 2;
-
-    pasillo[5].fil = mesa_guia.fil + 1; // Abajo Derecha Derecha
-    pasillo[5].col = mesa_guia.col + 2;
-
-    pasillo[6].fil = mesa_guia.fil + 2; // Abajo Abajo Derecha Derecha
-    pasillo[6].col = mesa_guia.col + 2;
-
-    pasillo[7].fil = mesa_guia.fil + 2; // Abajo Abajo Derecha
-    pasillo[7].col = mesa_guia.col + 1;
-
-    pasillo[8].fil = mesa_guia.fil + 2; // Abajo Abajo
-    pasillo[8].col = mesa_guia.col;
-
-    pasillo[9].fil = mesa_guia.fil + 2; // Abajo Abajo Izquierda
-    pasillo[9].col = mesa_guia.col - 1;
-
-    pasillo[10].fil = mesa_guia.fil + 1; // Abajo Izquierda
-    pasillo[10].col = mesa_guia.col - 1;
-
-    pasillo[11].fil = mesa_guia.fil; // Izquierda
-    pasillo[11].col = mesa_guia.col - 1;
-
-    for (int i = 0; i < PASILLO_MESA_GRUPAL; i++) {
-        if (hay_mesa(juego, pasillo[i])) return false;
-    }
-
-    return true;
 }
 
 // PRE: -
@@ -240,15 +192,21 @@ void posiciones_restantes_mesa_grupal(coordenada_t posicion_guia, coordenada_t p
 bool asignar_posiciones_grupales(juego_t *juego, coordenada_t posicion_guia, int indice_mesa) {
     coordenada_t posiciones[CANTIDAD_LUGARES_MESA_GRUPAL];
     posiciones_restantes_mesa_grupal(posicion_guia, posiciones);
-    bool todas_asignadas = true;
+    bool posiciones_asignadas = true;
 
     for (int i = 0; i < CANTIDAD_LUGARES_MESA_GRUPAL; i++) {
-        if (es_posicion_vacia(*juego, posiciones[i])) {
-            juego->mesas[indice_mesa].posicion[i] = posiciones[i];
-        } else todas_asignadas = false;
+        if (!es_posicion_vacia(*juego, posiciones[i])) {
+            return posiciones_asignadas = false;
+        }
     }
 
-    return todas_asignadas;
+    if (posiciones_asignadas) {
+        for (int i = 0; i < CANTIDAD_LUGARES_MESA_GRUPAL; i++) {
+            juego->mesas[indice_mesa].posicion[i] = posiciones[i];
+        }
+    }
+
+    return posiciones_asignadas;
 }
 
 // PRE: 'juego' debe estar correctamente inicializado.
@@ -256,15 +214,17 @@ bool asignar_posiciones_grupales(juego_t *juego, coordenada_t posicion_guia, int
 void inicializar_mesa_grupal(juego_t *juego) {
     for (int i = MAX_MESAS_INDIVIDUALES; i < MAX_MESAS_GRUPALES + MAX_MESAS_INDIVIDUALES; i++) {
         juego->mesas[i].cantidad_lugares = CANTIDAD_LUGARES_MESA_GRUPAL;
-        coordenada_t pasillo[PASILLO_MESA_GRUPAL];
+        juego->mesas[i].cantidad_comensales = 0;
+        juego->mesas[i].paciencia = 0;
+        juego->mesas[i].pedido_tomado = false;
         coordenada_t posicion_guia;
         int intentos = 0;
 
         do {
             posicion_guia = posicion_aleatoria_mesa_grupal();
             intentos++;
-            if (intentos >= (((MAX_FILAS * MAX_COLUMNAS) - (MAX_FILAS + MAX_COLUMNAS)) / CANTIDAD_LUGARES_MESA_GRUPAL)) return;
-        } while (!es_posicion_vacia(*juego, posicion_guia) || !pasillos_libres_mesa_grupal(*juego, i, pasillo) || !asignar_posiciones_grupales(juego, posicion_guia, i));
+            if (intentos >= ((MAX_FILAS * MAX_COLUMNAS) - (MAX_FILAS + MAX_COLUMNAS))) return;
+        } while (!pasillos_libres(*juego, i) || !asignar_posiciones_grupales(juego, posicion_guia, i));
 
         juego->cantidad_mesas++;
     }
@@ -447,7 +407,6 @@ void inicializar_terreno(juego_t juego) {
 //       Si el mozo tiene la mopa y la posición no está ocupada, deja la mopa.
 void manejar_mopa(juego_t *juego) {
     coordenada_t posicion_mopa = juego->herramientas[0].posicion;
-
     if (son_posiciones_iguales(juego->mozo.posicion, posicion_mopa)) {
         if (!juego->mozo.tiene_mopa) {
             juego->mozo.tiene_mopa = true;
@@ -481,7 +440,7 @@ void realizar_movimiento(juego_t *juego, char accion) {
             break;
         case MOPA:
             manejar_mopa(juego);
-            break;
+            return;
     }
 
     if (!son_posiciones_iguales(nueva_posicion, juego->mozo.posicion) && !hay_mesa(*juego, nueva_posicion)) {
@@ -493,6 +452,14 @@ void realizar_movimiento(juego_t *juego, char accion) {
 // PRE: -
 // POST: Inicializará el juego, cargando toda la información inicial de Linguini, las mesas, las herramientas y los obstáculos.
 void inicializar_juego(juego_t *juego) {
+    juego->cantidad_mesas = 0;
+    juego->cantidad_herramientas = 0;
+    juego->cantidad_obstaculos = 0;
+    juego->movimientos = 0;
+    juego->dinero = 0;
+    juego->mozo.cantidad_bandeja = 0;
+    juego->mozo.cantidad_patines = 0;
+
     inicializar_mesa_individual(juego);
     inicializar_mesa_grupal(juego);
     inicializar_cocina(juego);
