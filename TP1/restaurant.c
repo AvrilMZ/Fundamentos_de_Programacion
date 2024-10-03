@@ -120,10 +120,9 @@ bool es_posicion_vacia_excepto_linguini(juego_t juego, coordenada_t posicion) {
 
 // PRE: 'juego' debe estar correctamente inicializado e 'indice_mesa' debe estar dentro del rango de mesas posibles.
 // POST: Se asignan las posiciones de los pasillos alrededor de la mesa, chequeando que cada nueva posición no esté ocupada.
-bool pasillos_libres_mesa_individual(juego_t juego, int indice_mesa) {
+bool pasillos_libres_mesa_individual(juego_t juego, int indice_mesa, coordenada_t pasillo[]) {
     coordenada_t mesa_guia = juego.mesas[indice_mesa].posicion[0];
-    coordenada_t pasillo[PASILLO_MESA_INDIVIDUAL];
-
+    
     pasillo[0].fil = mesa_guia.fil - 1; // Arriba Izquierda
     pasillo[0].col = mesa_guia.col - 1;
 
@@ -149,9 +148,7 @@ bool pasillos_libres_mesa_individual(juego_t juego, int indice_mesa) {
     pasillo[7].col = mesa_guia.col + 1;
 
     for (int i = 0; i < PASILLO_MESA_INDIVIDUAL; i++) {
-        if (hay_mesa(juego, pasillo[i])) {
-            return false;
-        }
+        if (hay_mesa(juego, pasillo[i])) return false;
     }
 
     return true;
@@ -162,13 +159,14 @@ bool pasillos_libres_mesa_individual(juego_t juego, int indice_mesa) {
 void inicializar_mesa_individual(juego_t *juego) {
     for (int i = 0; i < MAX_MESAS_INDIVIDUALES; i++) {
         juego->mesas[i].cantidad_lugares = 1;
+        coordenada_t pasillo[PASILLO_MESA_INDIVIDUAL];
         int intentos = 0;
 
         do {
             juego->mesas[i].posicion[0] = posicion_aleatoria();
             intentos++;
             if (intentos >= (MAX_FILAS * MAX_COLUMNAS)) return;
-        } while (!es_posicion_vacia(*juego, juego->mesas[i].posicion[0]) && !pasillos_libres_mesa_individual(*juego, i));
+        } while (!es_posicion_vacia(*juego, juego->mesas[i].posicion[0]) || !pasillos_libres_mesa_individual(*juego, i, pasillo));
 
         juego->cantidad_mesas++;
     }
@@ -176,9 +174,8 @@ void inicializar_mesa_individual(juego_t *juego) {
 
 // PRE: 'juego' debe estar correctamente inicializado e 'indice_mesa' debe estar dentro del rango de mesas posibles.
 // POST: Se asignan las posiciones de los pasillos alrededor de la mesa grupal, chequeando que cada nueva posición no esté ocupada.
-bool pasillos_libres_mesa_grupal(juego_t juego, int indice_mesa) {
+bool pasillos_libres_mesa_grupal(juego_t juego, int indice_mesa, coordenada_t pasillo[]) {
     coordenada_t mesa_guia = juego.mesas[indice_mesa].posicion[0];
-    coordenada_t pasillo[PASILLO_MESA_GRUPAL];
 
     pasillo[0].fil = mesa_guia.fil - 1; // Arriba Izquierda
     pasillo[0].col = mesa_guia.col - 1;
@@ -217,9 +214,7 @@ bool pasillos_libres_mesa_grupal(juego_t juego, int indice_mesa) {
     pasillo[11].col = mesa_guia.col - 1;
 
     for (int i = 0; i < PASILLO_MESA_GRUPAL; i++) {
-        if (hay_mesa(juego, pasillo[i])) {
-            return false;
-        }
+        if (hay_mesa(juego, pasillo[i])) return false;
     }
 
     return true;
@@ -260,7 +255,8 @@ bool asignar_posiciones_grupales(juego_t *juego, coordenada_t posicion_guia, int
 // POST: Inicializa todas las mesas grupales en una posición aleatoria, si la posición ya está ocupada le asigna nuevamente otra aleatoria.
 void inicializar_mesa_grupal(juego_t *juego) {
     for (int i = MAX_MESAS_INDIVIDUALES; i < MAX_MESAS_GRUPALES + MAX_MESAS_INDIVIDUALES; i++) {
-        juego->mesas[i].cantidad_lugares = 4;
+        juego->mesas[i].cantidad_lugares = CANTIDAD_LUGARES_MESA_GRUPAL;
+        coordenada_t pasillo[PASILLO_MESA_GRUPAL];
         coordenada_t posicion_guia;
         int intentos = 0;
 
@@ -268,11 +264,9 @@ void inicializar_mesa_grupal(juego_t *juego) {
             posicion_guia = posicion_aleatoria_mesa_grupal();
             intentos++;
             if (intentos >= (((MAX_FILAS * MAX_COLUMNAS) - (MAX_FILAS + MAX_COLUMNAS)) / CANTIDAD_LUGARES_MESA_GRUPAL)) return;
-        } while (!es_posicion_vacia(*juego, posicion_guia) && !pasillos_libres_mesa_grupal(*juego, i));
-        
-        if (asignar_posiciones_grupales(juego, posicion_guia, i)) {
-            juego->cantidad_mesas++;
-        } else i--; 
+        } while (!es_posicion_vacia(*juego, posicion_guia) || !pasillos_libres_mesa_grupal(*juego, i, pasillo) || !asignar_posiciones_grupales(juego, posicion_guia, i));
+
+        juego->cantidad_mesas++;
     }
 }
 
