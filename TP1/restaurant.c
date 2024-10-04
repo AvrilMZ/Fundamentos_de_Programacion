@@ -77,7 +77,7 @@ bool hay_mesa(juego_t juego, coordenada_t posicion) {
     return false;
 }
 
-// PRE: -
+// PRE: 'juego' debe estar correctamente inicializado.
 // POST: Devuelve true si la posicion no fue previamente asignada, de lo contrario devuelve false.
 bool es_posicion_vacia(juego_t juego, coordenada_t posicion) {
     if (hay_mesa(juego, posicion)) return false;
@@ -97,7 +97,7 @@ bool es_posicion_vacia(juego_t juego, coordenada_t posicion) {
     return true;
 }
 
-// PRE: -
+// PRE: 'juego' debe estar correctamente inicializado.
 // POST: Devuelve true si la posicion no fue previamente asignada (excluyendo a Linguini), de lo contrario devuelve false.
 bool es_posicion_vacia_excepto_linguini(juego_t juego, coordenada_t posicion) {
     if (hay_mesa(juego, posicion)) return false;
@@ -405,7 +405,7 @@ void inicializar_terreno(juego_t juego) {
 // PRE: 'juego' debe estar correctamente inicializado.
 // POST: Si el mozo se encuentra en la posición de la mopa y no la tiene, la agarra y se elimina la posición. 
 //       Si el mozo tiene la mopa y la posición no está ocupada, deja la mopa.
-void manejar_mopa(juego_t *juego) {
+void utilizar_mopa(juego_t *juego) {
     coordenada_t posicion_mopa = juego->herramientas[0].posicion;
     if (son_posiciones_iguales(juego->mozo.posicion, posicion_mopa)) {
         if (!juego->mozo.tiene_mopa) {
@@ -439,7 +439,7 @@ void realizar_movimiento(juego_t *juego, char accion) {
             if (nueva_posicion.col > 0) nueva_posicion.col--;
             break;
         case MOPA:
-            manejar_mopa(juego);
+            utilizar_mopa(juego);
             return;
     }
 
