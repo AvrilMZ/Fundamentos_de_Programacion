@@ -13,15 +13,16 @@
 #define PATINES 'P'
 #define CUCARACHA ' '
 #define MAX_MESAS_INDIVIDUALES 6
-#define POSICIONES_PASILLO 8
 #define MAX_MESAS_GRUPALES 4
 #define CANTIDAD_LUGARES_MESA_GRUPAL 4
+#define POSICIONES_PASILLO 8
 
 const char LINGUINI = 'L';
 const char MESA = 'T';
 const char COCINA = 'C';
 const char VACIO = ' ';
 
+const int CANTIDAD_MOPAS = 1;
 const int CANTIDAD_CHARCOS = 5;
 const int CANTIDAD_MONEDAS = 8;
 const int CANTIDAD_PATINES = 5;
@@ -59,9 +60,7 @@ coordenada_t asignar_posicion_vacia() {
 // PRE: -
 // POST: Devuelve true si las posiciones son iguales, de lo contrario devuelve false.
 bool son_posiciones_iguales(coordenada_t coordenada, coordenada_t coordenada_a_comparar) {
-    if (coordenada.fil == coordenada_a_comparar.fil && coordenada.col == coordenada_a_comparar.col) {
-        return true;
-    } else return false;
+    return (coordenada.fil == coordenada_a_comparar.fil && coordenada.col == coordenada_a_comparar.col);
 }
 
 // PRE: 'juego' debe estar correctamente inicializado.
@@ -231,6 +230,13 @@ void inicializar_mesa_grupal(juego_t *juego) {
 }
 
 // PRE: 'juego' debe estar correctamente inicializado.
+// POST: Inicializa todas las mesas, ya sean individuales o grupales.
+void inicializar_mesa(juego_t *juego) {
+    inicializar_mesa_individual(juego);
+    inicializar_mesa_grupal(juego);
+}
+
+// PRE: 'juego' debe estar correctamente inicializado.
 // POST: Inicializa al personaje en una posicion aleatoria, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
 void inicializar_linguini(juego_t *juego) {
     juego->mozo.tiene_mopa = false;
@@ -256,73 +262,39 @@ void inicializar_cocina(juego_t *juego) {
 
 // PRE: 'juego' debe estar correctamente inicializado y 'tipo_herramienta' debe ser un char valido para una herramienta.
 // POST: Inicializa una herramienta en una posicion aleatoria, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
-void inicializar_herramienta(juego_t *juego, char tipo_herramienta) {
+void inicializar_herramienta(juego_t *juego, char tipo_herramienta, int cantidad_herramienta) {
     coordenada_t posicion;
-    int intentos = 0;
 
-    do {
-        posicion = posicion_aleatoria();
-        intentos++;
-        if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return; 
-    } while (!es_posicion_vacia(*juego, posicion));
+    for (int i = 0; i < cantidad_herramienta; i++) {
+        int intentos = 0;
+        do {
+            posicion = posicion_aleatoria();
+            intentos++;
+            if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return;
+        } while (!es_posicion_vacia(*juego, posicion));
 
-    juego->herramientas[juego->cantidad_herramientas].tipo = tipo_herramienta;
-    juego->herramientas[juego->cantidad_herramientas].posicion = posicion;
-    juego->cantidad_herramientas++;
-}
-
-// PRE: 'juego' debe estar correctamente inicializado.
-// POST: Inicializa la mopa en una posicion aleatoria, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
-void inicializar_mopa(juego_t *juego) {
-    inicializar_herramienta(juego, MOPA);
-}
-
-// PRE: 'juego' debe estar correctamente inicializado.
-// POST: Inicializa las monedas en posiciones aleatorias, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
-void inicializar_monedas(juego_t *juego) {
-    for (int i = 0; i < CANTIDAD_MONEDAS; i++) {
-        inicializar_herramienta(juego, MONEDA);
-    }
-}
-
-// PRE: 'juego' debe estar correctamente inicializado.
-// POST: Inicializa los patines en posiciones aleatorias, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
-void inicializar_patines(juego_t *juego) {
-    for (int i = 0; i < CANTIDAD_PATINES; i++) {
-        inicializar_herramienta(juego, PATINES);
+        juego->herramientas[juego->cantidad_herramientas].tipo = tipo_herramienta;
+        juego->herramientas[juego->cantidad_herramientas].posicion = posicion;
+        juego->cantidad_herramientas++;
     }
 }
 
 // PRE: 'juego' debe estar correctamente inicializado y 'tipo_obstaculo' debe ser un char valido para una herramienta.
 // POST: Inicializa un obstáculo en una posicion aleatoria, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
-void inicializar_obstaculo(juego_t *juego, char tipo_obstaculo) {
-    coordenada_t posicion;
-    int intentos = 0;
+void inicializar_obstaculo(juego_t *juego, char tipo_obstaculo, int cantidad_obstaculo) {
+    coordenada_t posicion;    
 
-    do {
-        posicion = posicion_aleatoria();
-        intentos++;
-        if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return; 
-    } while (!es_posicion_vacia(*juego, posicion));
+    for (int i = 0; i < cantidad_obstaculo; i++) {
+        int intentos = 0;
+        do {
+            posicion = posicion_aleatoria();
+            intentos++;
+            if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return; 
+        } while (!es_posicion_vacia(*juego, posicion));
 
-    juego->obstaculos[juego->cantidad_obstaculos].tipo = tipo_obstaculo;
-    juego->obstaculos[juego->cantidad_obstaculos].posicion = posicion;
-    juego->cantidad_obstaculos++;
-}
-
-// PRE: 'juego' debe estar correctamente inicializado.
-// POST: Inicializa los charcos en posiciones aleatorias, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
-void inicializar_charcos(juego_t *juego) {
-    for (int i = 0; i < CANTIDAD_CHARCOS; i++) {
-        inicializar_obstaculo(juego, CHARCO);
-    }
-}
-
-// PRE: 'juego' debe estar correctamente inicializado.
-// POST: Inicializa las cucarachas en posiciones aleatorias, si la posicion ya esta ocupada le asigna nuevamente otra aleatoria.
-void inicializar_cucarachas(juego_t *juego) {
-    for (int i = 0; i < CANTIDAD_CUCARACHAS; i++) {
-        inicializar_obstaculo(juego, CUCARACHA);
+        juego->obstaculos[juego->cantidad_obstaculos].tipo = tipo_obstaculo;
+        juego->obstaculos[juego->cantidad_obstaculos].posicion = posicion;
+        juego->cantidad_obstaculos++;
     }
 }
 
@@ -420,6 +392,12 @@ void utilizar_mopa(juego_t *juego) {
     }
 }
 
+//PRE: -
+//POST: Devuelve true si el carácter ingresado es una acción valida, de lo contrario devuelve false.
+bool es_accion_valida(char accion) {
+    return (accion == ARRIBA || accion == ABAJO || accion == DERECHA || accion == IZQUIERDA || accion == MOPA);
+}
+
 // PRE: 'juego' debe estar correctamente inicializado y la acción debe ser válida.
 // POST: Actualiza la posición del mozo si en la nueva posición no hay una mesa y posibilita la interaccion con la mopa.
 void realizar_movimiento(juego_t *juego, char accion) {
@@ -460,24 +438,23 @@ void inicializar_juego(juego_t *juego) {
     juego->mozo.cantidad_bandeja = 0;
     juego->mozo.cantidad_patines = 0;
 
-    inicializar_mesa_individual(juego);
-    inicializar_mesa_grupal(juego);
+    inicializar_mesa(juego);
     inicializar_cocina(juego);
     inicializar_linguini(juego);
-    inicializar_mopa(juego);
-    inicializar_monedas(juego);
-    inicializar_patines(juego);
-    inicializar_charcos(juego);
-    inicializar_cucarachas(juego);
+    inicializar_herramienta(juego, MOPA, CANTIDAD_MOPAS);
+    inicializar_herramienta(juego, MONEDA, CANTIDAD_MONEDAS);
+    inicializar_herramienta(juego, PATINES, CANTIDAD_PATINES);
+    inicializar_obstaculo(juego, CHARCO, CANTIDAD_CHARCOS);
+    inicializar_obstaculo(juego, CUCARACHA, CANTIDAD_CUCARACHAS);
     inicializar_terreno(*juego);
 }
 
 // PRE: El juego debe estar inicializado previamente con `inicializar_juego` y la acción debe ser válida.
 // POST: Realizará la acción recibida por parámetro.
 void realizar_jugada(juego_t *juego, char accion) {
-    while (accion != ARRIBA && accion != ABAJO && accion != DERECHA && accion != IZQUIERDA && accion != MOPA){
+    if (!es_accion_valida(accion)){
         printf("Ingrese un movimiento valido (W/S/A/D) ó interactue con la mopa (O):\n");
-        scanf(" %c", &accion);
+        return;
     }
 
     realizar_movimiento(juego, accion);
@@ -489,10 +466,10 @@ void realizar_jugada(juego_t *juego, char accion) {
 //       Se dará por perdido si se termina el día y no se llegó al monto.
 int estado_juego(juego_t juego) {
     if (juego.movimientos == MAX_MOVIMIENTOS){
-        if (juego.dinero == OBJETIVO_DINERO){
-            return 1;
-        } else return -1;
-    } else return 0;
+        if (juego.dinero == OBJETIVO_DINERO) return 1;
+        return -1;
+    }
+    return 0;
 }
 
 // PRE: El juego debe estar inicializado previamente con `inicializar_juego`.
@@ -517,15 +494,10 @@ void mostrar_juego(juego_t juego) {
 
         printf("Realizo %i/%i movimientos.\n", juego.movimientos, MAX_MOVIMIENTOS);
         printf("Objetivo de monedas %i/%i.\n", juego.dinero, OBJETIVO_DINERO);
+
         printf("Ingresa un movimiento (W/S/A/D) o interactúa con la mopa (O):\n");
         scanf(" %c", &accion);
-        realizar_jugada(&juego, accion);
         
-        int estado = estado_juego(juego);
-        if (estado == 1){
-            printf("¡Ganaste!");
-        } else if (estado == -1){
-            printf("Perdiste");
-        }
+        realizar_jugada(&juego, accion);
     } 
 }
