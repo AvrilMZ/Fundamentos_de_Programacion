@@ -3,15 +3,31 @@
 #include <time.h>
 #include "restaurant.h"
 
+const char ARRIBA = 'W';
+const char ABAJO = 'S';
+const char DERECHA = 'D';
+const char IZQUIERDA = 'A';
+const char MOPA = 'O';
+
 int main(){
     srand((unsigned)time(NULL));
     juego_t juego;
-    int estado = estado_juego(juego);
 
     inicializar_juego(&juego);
 
-    while (estado == 0) {
+    int estado = 0;
+    while (estado == 0){
         mostrar_juego(juego);
+
+        char accion = ' ';
+        printf("Ingrese un movimiento (W/S/A/D) o interactúa con la mopa (O):\n");
+        scanf(" %c", &accion);
+        while (accion != ARRIBA || accion != ABAJO || accion != DERECHA || accion != IZQUIERDA || accion != MOPA) {
+            printf("Movimiento invalido. Ingrese un movimiento (W/S/A/D) ó interactue con la mopa (O):\n");
+            scanf(" %c", &accion);
+        }
+
+        estado = estado_juego(juego);
     }
 
     if (estado == 1){

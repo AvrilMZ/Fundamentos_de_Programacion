@@ -392,12 +392,6 @@ void utilizar_mopa(juego_t *juego) {
     }
 }
 
-//PRE: -
-//POST: Devuelve true si el carácter ingresado es una acción valida, de lo contrario devuelve false.
-bool es_accion_valida(char accion) {
-    return (accion == ARRIBA || accion == ABAJO || accion == DERECHA || accion == IZQUIERDA || accion == MOPA);
-}
-
 // PRE: 'juego' debe estar correctamente inicializado y la acción debe ser válida.
 // POST: Actualiza la posición del mozo si en la nueva posición no hay una mesa y posibilita la interaccion con la mopa.
 void realizar_movimiento(juego_t *juego, char accion) {
@@ -427,6 +421,25 @@ void realizar_movimiento(juego_t *juego, char accion) {
     }
 }
 
+// PRE: 'juego' debe estar correctamente inicializado.
+// POST: Imprime por pantalla toda la información útil al momento de jugar.
+void informacion_util(juego_t juego) {
+    if (juego.mozo.tiene_mopa){
+        printf("Tenés la mopa.\n");
+    } else if (!juego.mozo.tiene_mopa){
+        for (int i = 0; i < juego.cantidad_herramientas; i++){
+            if (juego.herramientas[i].tipo == MOPA){
+                if (son_posiciones_iguales(juego.mozo.posicion, juego.herramientas[i].posicion)){
+                    printf("Estás sobre la mopa. ¡Podés agarrarla!.\n");
+                } else printf("No tenés la mopa.\n");
+            } 
+        }
+    }
+
+    printf("Realizo %i/%i movimientos.\n", juego.movimientos, MAX_MOVIMIENTOS);
+    printf("Objetivo de monedas %i/%i.\n", juego.dinero, OBJETIVO_DINERO);
+}
+
 // PRE: -
 // POST: Inicializará el juego, cargando toda la información inicial de Linguini, las mesas, las herramientas y los obstáculos.
 void inicializar_juego(juego_t *juego) {
@@ -452,11 +465,6 @@ void inicializar_juego(juego_t *juego) {
 // PRE: El juego debe estar inicializado previamente con `inicializar_juego` y la acción debe ser válida.
 // POST: Realizará la acción recibida por parámetro.
 void realizar_jugada(juego_t *juego, char accion) {
-    if (!es_accion_valida(accion)){
-        printf("Ingrese un movimiento valido (W/S/A/D) ó interactue con la mopa (O):\n");
-        return;
-    }
-
     realizar_movimiento(juego, accion);
 }
 
@@ -475,29 +483,7 @@ int estado_juego(juego_t juego) {
 // PRE: El juego debe estar inicializado previamente con `inicializar_juego`.
 // POST: Imprime el juego por pantalla.
 void mostrar_juego(juego_t juego) {
-    char accion = ' ';
-    while (estado_juego(juego) == 0){
-        system("clear");
-        inicializar_terreno(juego);
-
-        if (juego.mozo.tiene_mopa){
-            printf("Tenés la mopa.\n");
-        } else if (!juego.mozo.tiene_mopa){
-            for (int i = 0; i < juego.cantidad_herramientas; i++){
-                if (juego.herramientas[i].tipo == MOPA){
-                    if (juego.mozo.posicion.fil == juego.herramientas[i].posicion.fil && juego.mozo.posicion.col == juego.herramientas[i].posicion.col){
-                        printf("Estás sobre la mopa. ¡Podés agarrarla!.\n");
-                    } else printf("No tenés la mopa.\n");
-                } 
-            }
-        }
-
-        printf("Realizo %i/%i movimientos.\n", juego.movimientos, MAX_MOVIMIENTOS);
-        printf("Objetivo de monedas %i/%i.\n", juego.dinero, OBJETIVO_DINERO);
-
-        printf("Ingresa un movimiento (W/S/A/D) o interactúa con la mopa (O):\n");
-        scanf(" %c", &accion);
-        
-        realizar_jugada(&juego, accion);
-    } 
+    system("clear");
+    inicializar_terreno(juego);
+    informacion_util(juego);
 }
