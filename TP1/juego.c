@@ -22,11 +22,12 @@ int main(){
         char accion = ' ';
         printf("Ingrese un movimiento (W/S/A/D) o interactúa con la mopa (O):\n");
         scanf(" %c", &accion);
-        while (accion != ARRIBA || accion != ABAJO || accion != DERECHA || accion != IZQUIERDA || accion != MOPA) {
+        while (accion != ARRIBA && accion != ABAJO && accion != DERECHA && accion != IZQUIERDA && accion != MOPA) {
             printf("Movimiento invalido. Ingrese un movimiento (W/S/A/D) ó interactue con la mopa (O):\n");
             scanf(" %c", &accion);
         }
 
+        realizar_jugada(&juego, accion);
         estado = estado_juego(juego);
     }
 
