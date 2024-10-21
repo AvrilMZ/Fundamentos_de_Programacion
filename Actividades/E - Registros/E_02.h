@@ -1,3 +1,21 @@
+/*Después de haber elegido el lugar y la fecha donde vacacionar, Simba, Timón y Pumba están haciendo las últimas compras necesarias para viajar. Su idea es gastar lo menos posible, para que les quede mucha plata para llevar y gastarla en el lugar.
+
+Implementar un procedimiento que calcule el precio total que tienen que gastar, y lo escriba en el campo precio_total del registro de lista de compras.
+
+Lista de precios disponibles:
+Chocolate: 50.
+Caramelos: 10.
+Gaseosa: 70.
+Pelota de playa: 120.
+
+Ejemplo:
+Si nos vienen las siguientes cantidades en nuestra lista:
+Chocolates: 5.
+Caramelos: 0.
+Gaseosa: 1.
+Pelota de playa: 1.
+Al final de nuestra función el campo precio_total debería ser 440.*/
+
 #include <stdio.h>
 #include "solucion.h"
 

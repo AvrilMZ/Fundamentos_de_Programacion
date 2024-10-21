@@ -1,3 +1,15 @@
+/*En el camino a la clase “Sustos y programación I”, las pancitas de Mike Wazouski y Sullivan empezaron a gruñir. Ahora deberán decidir a dónde comprar comida para llevar. Para ello deberán considerar si un restaurante es lo suficientemente rápido. Dado el registro ‘restaurante_t’ que contiene al registro ‘empleados_t’ calcular la velocidad de preparación teniendo en cuenta:
+Si los empleados tienen un delay mayor (estricto) a 5 minutos, se considerará lento.
+Si los empleados están de franco, se considerará muy lento.
+Si el restaurante está cerrado, se considerará muy lento.
+Si el restaurante no es de comida rápida, se considerará lento.
+En cualquier otro caso, se considerará rápido.
+
+Implementar una función que teniendo en cuenta las reglas detallas arriba, calcule la velocidad del restaurante y devuelva, según corresponda, un caracter: (L)ento, (M)uy lento o (R)ápido.
+
+Aclaración:
+Si un restaurante es lento y muy lento se lo considerará muy lento.*/
+
 #include "solucion.h"
 
 const int DELAY_MAYOR = 5;

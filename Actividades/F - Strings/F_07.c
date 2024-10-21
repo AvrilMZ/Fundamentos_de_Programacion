@@ -1,3 +1,13 @@
+/*Llegó un nuevo juguete llamado Kiki a la casa de Andy. Kiki solo sabe hablar kikiakanoko y como Woody quiere acercarse a él para formar una amistad, decide aprender a hablarlo.
+Luego de escucharlo hablar por unas horas se dio cuenta de algo:
+Después de cada vocal, se agrega la letra "k" y se repite la vocal.
+
+Implementar un procedimiento que traduzca una frase a kikiakanoko.
+
+Ejemplo:
+"Eres un juguete"
+"Ekerekes ukun jukugukueketeke"*/
+
 #include <string.h>
 #define MAX_FRASE 50
 

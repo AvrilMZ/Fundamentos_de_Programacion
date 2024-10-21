@@ -1,3 +1,21 @@
+/*Sully y Mike están haciendo un calendario para poder anotar sus tareas del día a día, pero les resultó aburrido escribir los días y meses de la manera tradicional. Para hacerlo más divertido, se les ocurrió transformar un poco las palabras con las siguientes reglas:
+
+Días de semana: Si la palabra es un día de semana, y tiene hasta 6 letras (inclusive), se agrega al final el sufijo “ardo”. En cambio, si tiene más de 6 letras, se repiten las primeras dos letras.
+Meses del año: Si la palabra es un mes, y tiene hasta 5 letras (inclusive), se agrega al final la palabra “duki”. En cambio, si tiene más de 5 letras, se repiten las últimas dos letras.
+
+Implementar un procedimiento que transforme la palabra recibida, según las reglas del juego creadas por Sully y Mike.
+
+Tener en cuenta:
+Tanto los días de semana como los meses vienen en minúscula y sin caracteres especiales (como lo son tildes, ñ, etc). Se deja un listado de cómo puede venir cada uno:
+Días de semana: lunes, martes, miercoles, jueves, viernes, sabado, domingo.
+Meses del año: enero, febrero, marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre, diciembre.
+
+Ejemplos:
+sabado, debe quedar sabadoardo.
+domingo, debe quedar domingodo.
+mayo, debe quedar mayoduki.
+noviembre, debe quedar noviembrere.*/
+
 #include <string.h>
 #include <stdbool.h>
 #define MAX_PALABRA 50

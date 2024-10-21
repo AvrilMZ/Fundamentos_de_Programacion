@@ -1,3 +1,11 @@
+/*Mate estaba planeando su última operación como espía, hasta que se dio cuenta que el teléfono por donde se comunica la agencia, estaba pinchado, por lo que todos sus enemigos estaban escuchando su plan.
+Para evitar que tengan más información, decidieron comenzar a hablar sólo con las vocales. De esta forma, el plan sería secreto y sólo ellas podían entenderlo.
+
+Implementar un procedimiento que, dado un plan, elimine todas las consonantes existentes en él.
+
+Ejemplo:
+Si el plan es “Entrar de incognito”, debe quedar “Ea e ioio”.*/
+
 #include <string.h>
 #define MAX_PLAN 50
 

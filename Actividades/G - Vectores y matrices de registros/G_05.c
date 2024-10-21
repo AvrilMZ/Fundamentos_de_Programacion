@@ -1,3 +1,8 @@
+/*Mabel y sus amigas Candy y Grenda son super admiradoras de la banda de chicos Sev'ral Timez y de vez en cuando se divierten dedicándoles cartas de amor a los diferentes miembros de esta, las cuales guardan.
+
+Dado un vector de registros correspondientes a cartas de amor, determinar el índice de cuál es la que tiene mayor cantidad de palabras románticas.
+En caso de empate, devolver la primera encontrada (La más cercana al indice 0)*/
+
 #include <stdio.h>
 #include <stdbool.h>
 #define MAX_CARTAS 50

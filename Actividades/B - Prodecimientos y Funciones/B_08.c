@@ -1,3 +1,15 @@
+/*Los hermanos de Mérida (Harris, Hubert y Hamish) atraviesan varios cambios de humor a lo largo de un año según las estaciones. Según su hermana, por cada estación cada uno pasa por un humor diferente:
+Primavera (P): Harris y Hubert están contentos, mientras que Hamish está meh.
+Verano (V): Hamish está triste, Harris está meh y Hubert está contento.
+Otoño (O): los tres hermanos están contentos (obvio, si es la mejor estación).
+Invierno (I): Hamish está contento, Harris está meh y Hubert está triste.
+
+Implementar una función que dada la estación del año modifiqué el humor de cada hermano al correspondiente, y devuelva la cantidad de hermanos que están contentos.
+Tener en cuenta que cada humor está representado por un caracter:
+Contento (C)
+Meh (M)
+Triste (T)*/
+
 #include <stdio.h>
 
 #define VERANO 'V'

@@ -1,3 +1,7 @@
+/*Como era de esperarse, la incontrolada fuerza de Hércules causó que algunas mancuernas salieran volando al bosque cercano, perdiéndose para siempre. Como a Phil le gusta mantener su almacén de equipamiento listo y preparado para el próximo héroe que toque su puerta, necesita reponer las mancuernas perdidas lo antes posible, por lo que se pide:
+
+Implementar una función que recorra el bosque (ahora representado por mancuernas “M” y pasto “P”) y devuelva la cantidad de mancuernas perdidas.*/
+
 #include <stdio.h>
 #define MAX_FILAS 5
 #define MAX_COLUMNAS 5
