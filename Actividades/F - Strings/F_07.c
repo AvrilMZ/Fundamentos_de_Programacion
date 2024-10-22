@@ -9,25 +9,31 @@ Ejemplo:
 "Ekerekes ukun jukugukueketeke"*/
 
 #include <string.h>
+#include <stdbool.h>
 #define MAX_FRASE 50
 
 const char* VOCALES = "aeiouAEIOU";
 
 void traducir_frase(char frase_woody[MAX_FRASE]) {
-	size_t tope_frase = strlen(frase_woody);
-    char traduccion[MAX_FRASE * 3];
-    int j = 0;
+	char resultado[MAX_FRASE * 3];
+    size_t j = 0;
+    size_t longitud = strlen(frase_woody);
 
-    for (size_t i = 0; i < tope_frase; i++) {
-        for (size_t k = 0; VOCALES[k] != '\0'; k++) {
-            if (frase_woody[i] == VOCALES[k]) {
-                traduccion[j++] = frase_woody[i];
-                traduccion[j++] = 'k';
-                traduccion[j++] = frase_woody[i];
-            } else traduccion[j++] = frase_woody[i];
+    for (size_t i = 0; i < longitud; i++) {
+        bool es_vocal = false;
+
+        for (size_t k = 0; k < strlen(VOCALES); k++) {
+            if (frase_woody[i] == VOCALES[k]) es_vocal = true;
         }
+        
+        if (es_vocal) {
+            resultado[j++] = frase_woody[i];
+            resultado[j++] = 'k';
+            resultado[j++] = frase_woody[i];
+        } else resultado[j++] = frase_woody[i];
+        
     }
-
-    traduccion[j] = '\0';
-    strcpy(frase_woody, traduccion);
+    
+    resultado[j] = '\0';
+    strcpy(frase_woody, resultado);
 }

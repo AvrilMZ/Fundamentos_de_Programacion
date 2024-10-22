@@ -30,5 +30,21 @@ typedef struct casilla {
 } casilla_t;
 
 int jugar_sapito(casilla_t laguna[MAX_FILAS][MAX_COLUMNAS], int tope_filas, int tope_columnas, int fila_elegida){
-    
+    int columna_actual = 0;
+
+    while (columna_actual < tope_columnas) {
+        int cantidad_avanzar = laguna[fila_elegida][columna_actual].cantidad_avanzar;
+        int cantidad_atrasar = laguna[fila_elegida][columna_actual].cantidad_atrasar;
+        bool es_obstaculo = laguna[fila_elegida][columna_actual].es_obstaculo;
+
+        int avance_total;
+        if (es_obstaculo) avance_total = cantidad_avanzar - cantidad_atrasar;
+        else avance_total = cantidad_avanzar;
+
+        if (avance_total <= 0 || columna_actual + avance_total >= tope_columnas) return columna_actual;
+
+        columna_actual += avance_total;
+    }
+
+    return columna_actual;
 }

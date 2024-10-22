@@ -13,8 +13,15 @@ typedef struct punto{
 	int x;
 	int y;
 	int fortaleza;
-}punto_t;
+} punto_t;
 
 punto_t punto_mas_cercano(punto_t centro, punto_t puntos[MAX_PUNTOS], int tope){
-	
+	punto_t punto_cercano = puntos[0];
+	for (int i = 1; i < tope; i++) {
+		if (distancia_entre_puntos(centro, puntos[i]) < distancia_entre_puntos(centro, punto_cercano)) punto_cercano = puntos[i];
+		else if (distancia_entre_puntos(centro, puntos[i]) == distancia_entre_puntos(centro, punto_cercano)) {
+			if (puntos[i].fortaleza < punto_cercano.fortaleza) punto_cercano = puntos[i];
+		}
+	}
+	return punto_cercano;
 }

@@ -9,16 +9,28 @@ Los frascos están representados por un registro que contiene los siguientes dat
     Contenido (int).*/
 
 #include <stdio.h>
-#include <stdbool.h>
-#define MAX_ALIMENTOS 400
-#define MAX_NOMBRE 144
+#include <string.h>
+#define MAX_FRASCOS 200
+#define MAX_ETIQUETA 144
 
-typedef struct alimento {
-    char nombre[MAX_NOMBRE];
-    bool vencio;
-    int puntos_mal_olor;
-} alimento_t;
+const int CAPACIDAD_FRASCOS = 85;
+const char* ETIQUETA_A_LLENAR = "Llama";
 
-int cantidad_alimentos_echados_a_perder(alimento_t alimentos[MAX_ALIMENTOS], int tope){
-    
+typedef struct frasco {
+    char etiqueta[MAX_ETIQUETA];
+    int contenido;
+} frasco_t;
+
+int rellenar_frascos(frasco_t frascos[MAX_FRASCOS], int tope){
+    int cantiadad_liquido_usado = 0;
+    for (int i = 0; i < tope; i++) {
+        if (strcmp(frascos[i].etiqueta, ETIQUETA_A_LLENAR) == 0) {
+            if (frascos[i].contenido < CAPACIDAD_FRASCOS) {
+                int espacio_disponible = CAPACIDAD_FRASCOS - frascos[i].contenido;
+                frascos[i].contenido += espacio_disponible;
+                cantiadad_liquido_usado += espacio_disponible; 
+            }
+        }
+    }
+    return cantiadad_liquido_usado;
 }

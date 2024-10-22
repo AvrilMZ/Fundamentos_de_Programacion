@@ -26,6 +26,8 @@ columna = 1
 Se debe mover a Mowgli quedando la matriz modificada, y se debe devolver ‘true’*/
 
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #define MAX_FILAS 30
 #define MAX_COLUMNAS 25
 
@@ -34,27 +36,51 @@ const char MOWGLI = 'M';
 const char VACIO = 'V';
 
 bool escapar(char templo[MAX_FILAS][MAX_COLUMNAS], int tope_filas, int tope_columnas, int nueva_fila, int nueva_columna) {
-    if (nueva_fila < 0 || nueva_fila >= tope_filas || nueva_columna < 0 || nueva_columna >= tope_columnas) return false;
+    if (nueva_fila < 0 || nueva_fila >= tope_filas || nueva_columna < 0 || nueva_columna >= tope_columnas) {
+        return false;
+    }
 
-    if (templo[nueva_fila][nueva_columna] == SHERE || (nueva_fila == -1 && nueva_columna == -1)) return false;
+    if (templo[nueva_fila][nueva_columna] == SHERE) {
+        return false;
+    }
 
+    int fila_shere_kan = -1, columna_shere_kan = -1;
     for (int i = 0; i < tope_filas; i++) {
         for (int j = 0; j < tope_columnas; j++) {
             if (templo[i][j] == SHERE) {
-                int diferencia_fila = nueva_fila - i;
-                int diferencia_columna = nueva_columna - j;
-                if (diferencia_fila * diferencia_fila + diferencia_columna * diferencia_columna < 4) return false;
+                fila_shere_kan = i;
+                columna_shere_kan = j;
             }
         }
     }
 
-    for (int i = 0; i < tope_filas; i++) {
-        for (int j = 0; j < tope_columnas; j++) {
-            if (templo[i][j] == MOWGLI) templo[i][j] = VACIO;
+    if (fila_shere_kan != -1) {
+        int distancia_fila = nueva_fila - fila_shere_kan;
+        int distancia_columna = nueva_columna - columna_shere_kan;
+
+        if (abs(distancia_fila) <= 1 && abs(distancia_columna) <= 1) {
+            return false;
         }
     }
-    
-    templo[nueva_fila][nueva_columna] = MOWGLI;
 
+    int fila_mowgli = -1, columna_mowgli = -1;
+    for (int i = 0; i < tope_filas; i++) {
+        for (int j = 0; j < tope_columnas; j++) {
+            if (templo[i][j] == MOWGLI) {
+                fila_mowgli = i;
+                columna_mowgli = j;
+            }
+        }
+    }
+
+    if (fila_mowgli == nueva_fila && columna_mowgli == nueva_columna) {
+        return false;
+    }
+
+    if (fila_mowgli != -1) {
+        templo[fila_mowgli][columna_mowgli] = VACIO;
+    }
+
+    templo[nueva_fila][nueva_columna] = MOWGLI;
     return true;
 }

@@ -24,5 +24,7 @@ typedef struct jueguete{
 } juguete_t;
 
 void agregar_juguete(juguete_t juguetes[MAX_JUGUETES], int* tope_juguetes, char nombre[MAX_NOMBRE]){
-    
+    strcpy(juguetes[*tope_juguetes].nombre, nombre);
+    juguetes[*tope_juguetes].guardado = true;
+    (*tope_juguetes)++;
 }

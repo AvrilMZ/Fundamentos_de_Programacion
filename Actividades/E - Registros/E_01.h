@@ -14,8 +14,8 @@ Tené en cuenta que los vectores son strings.*/
 
 #include <stdbool.h>
 
-#define MAX_CARACTERES_NOMBRE 50
-#define MAX_CARACTERES_INFO 50
+#define MAX_CARACTERES_NOMBRE 51
+#define MAX_CARACTERES_INFO 51
 
 typedef struct enemigo{
 	char nombre[MAX_CARACTERES_NOMBRE];

@@ -27,5 +27,6 @@ typedef struct posicion {
 } posicion_t;
 
 bool hay_juguete(escondite_t cuarto[MAX_FILAS][MAX_COLUMNAS], int tope_filas, int tope_columnas, posicion_t posicion){
-    
+    if (posicion.fila < 0 || posicion.fila >= tope_filas || posicion.columna < 0 || posicion.columna >= tope_columnas) return false;
+    return cuarto[posicion.fila][posicion.columna].ocupado;
 }

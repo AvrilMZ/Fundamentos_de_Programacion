@@ -11,8 +11,16 @@ typedef struct carta{
 	int id;
 	int cantidad_palabras_de_amor;
 	bool esta_arrugada;
-}carta_t;
+} carta_t;
 
 int indice_carta_mas_palabras_de_amor(carta_t cartas[MAX_CARTAS], int tope){
-	
+	int carta_mas_palabras = 0;
+	int maximo_palabras_actual = 0;
+	for (int i = 0; i < tope; i++) {
+		if (cartas[i].cantidad_palabras_de_amor > maximo_palabras_actual) {
+			maximo_palabras_actual = cartas[i].cantidad_palabras_de_amor;
+			carta_mas_palabras = i;
+		}
+	}
+	return carta_mas_palabras;
 }

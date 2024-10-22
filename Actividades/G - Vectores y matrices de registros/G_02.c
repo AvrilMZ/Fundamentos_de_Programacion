@@ -21,5 +21,9 @@ typedef struct alimento {
 } alimento_t;
 
 int cantidad_alimentos_echados_a_perder(alimento_t alimentos[MAX_ALIMENTOS], int tope){
-    
+    int alimentos_viejos = 0;
+    for (int i = 0; i < tope; i++) {
+        if (alimentos[i].vencio == true && alimentos[i].puntos_mal_olor > 3) alimentos_viejos++;
+    }
+    return alimentos_viejos;
 }

@@ -24,5 +24,11 @@ typedef struct dipper {
 } dipper_t;
 
 void inicializar_clones(dipper_t clones[MAX_FILAS][MAX_COLUMNAS], int tope_filas, int tope_columnas, dipper_t original){
-    
+    for (int i = 0; i < tope_filas; i++) {
+        for (int j = 0; j < tope_columnas; j++) {
+            clones[i][j] = original;
+            clones[i][j].es_clon = true;
+            clones[i][j].paciencia = i * j;
+        }
+    }
 }
