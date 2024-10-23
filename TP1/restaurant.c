@@ -161,7 +161,7 @@ void inicializar_mesa_individual(juego_t *juego) {
         juego->mesas[i].cantidad_comensales = 0;
         juego->mesas[i].paciencia = 0;
         juego->mesas[i].pedido_tomado = false;
-        
+
         int intentos = 0;
 
         do {
@@ -177,25 +177,36 @@ void inicializar_mesa_individual(juego_t *juego) {
 
 // PRE: 'juego' debe estar correctamente inicializado e 'indice_mesa' debe estar dentro del rango de mesas posibles.
 // POST: Asigna las posiciones de la mesa grupal basándose en 'posicion_guia', verificando si las posiciones estan desocupadas.
-bool posiciones_restantes_mesa_grupal(juego_t *juego, coordenada_t posicion_guia, int indice_mesa) {
-    juego->mesas[indice_mesa].posicion[0] = posicion_guia;
+bool posible_posiciones_mesa_grupal(juego_t *juego, coordenada_t posicion_guia, int indice_mesa) {
+    coordenada_t posiciones[CANTIDAD_LUGARES_MESA_GRUPAL];
+    posiciones[0] = posicion_guia;
 
-    juego->mesas[indice_mesa].posicion[1].fil = posicion_guia.fil; // Derecha
-    juego->mesas[indice_mesa].posicion[1].col = posicion_guia.col + 1;
+    posiciones[1].fil = posicion_guia.fil; // Derecha
+    posiciones[1].col = posicion_guia.col + 1;
 
-    juego->mesas[indice_mesa].posicion[2].fil = posicion_guia.fil + 1; // Abajo
-    juego->mesas[indice_mesa].posicion[2].col = posicion_guia.col;
+    posiciones[2].fil = posicion_guia.fil + 1; // Abajo
+    posiciones[2].col = posicion_guia.col;
 
-    juego->mesas[indice_mesa].posicion[3].fil = posicion_guia.fil + 1; // Abajo Derecha
-    juego->mesas[indice_mesa].posicion[3].col = posicion_guia.col + 1;
+    posiciones[3].fil = posicion_guia.fil + 1; // Abajo Derecha
+    posiciones[3].col = posicion_guia.col + 1;
 
-    juego->mesas[indice_mesa].cantidad_lugares = CANTIDAD_LUGARES_MESA_GRUPAL;
-
-    for (int i = 0; i < juego->mesas[indice_mesa].cantidad_lugares; i++) {
-        if (!es_posicion_vacia(*juego, juego->mesas[indice_mesa].posicion[i])) {
+    for (int i = 0; i < CANTIDAD_LUGARES_MESA_GRUPAL; i++) {
+        if (!es_posicion_vacia(*juego, posiciones[i])) {
             return false;
         }
     }
+
+    for (int i = 0; i < CANTIDAD_LUGARES_MESA_GRUPAL; i++) {
+        if (!pasillos_libres(*juego, posiciones[i])) {
+            return false;
+        }
+    }
+
+    for (int i = 0; i < CANTIDAD_LUGARES_MESA_GRUPAL; i++) {
+        juego->mesas[indice_mesa].posicion[i] = posiciones[i];
+    }
+
+    juego->mesas[indice_mesa].cantidad_lugares = CANTIDAD_LUGARES_MESA_GRUPAL;
 
     return true;
 }
@@ -217,11 +228,7 @@ void inicializar_mesa_grupal(juego_t *juego) {
             posicion_guia = posicion_aleatoria_mesa_grupal();
             intentos++;
             if (intentos >= ((MAX_FILAS * MAX_COLUMNAS) - (MAX_FILAS + MAX_COLUMNAS))) return;
-        } while (!posiciones_restantes_mesa_grupal(juego, posicion_guia, i) ||
-            !pasillos_libres(*juego, juego->mesas[i].posicion[0]) || 
-            !pasillos_libres(*juego, juego->mesas[i].posicion[1]) || 
-            !pasillos_libres(*juego, juego->mesas[i].posicion[2]) || 
-            !pasillos_libres(*juego, juego->mesas[i].posicion[3]));
+        } while (!posible_posiciones_mesa_grupal(juego, posicion_guia, i));
 
         juego->cantidad_mesas++;
     }
