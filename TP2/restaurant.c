@@ -53,7 +53,7 @@ const int DISMINUCION_PACIENCIA_CUCARACHA = 2;
 const int DISTANCIA_MESA_CUCARACHA = 2;
 const int DISTANCIA_MESA_MOZO = 1;
 
-// POST: Devuelve una posición aleatoria.
+// POST: Devuelve una posición aleatoria dentro del rango del terreno.
 coordenada_t posicion_aleatoria() {
     coordenada_t posicion;
     posicion.fil = rand() % MAX_FILAS;
@@ -67,6 +67,21 @@ coordenada_t asignar_posicion_vacia() {
     posicion.fil = -1;
     posicion.col = -1;
     return posicion;
+}
+
+// POST: Devuelve un valor aleatorio de comensales, entre 1 y 'MAX_MESAS_GRUPALES'.
+int cantidad_aleatoria_comensales() {
+    return (rand() % MAX_MESAS_GRUPALES) + 1;
+}
+
+// POST: Devuelve un valor aleatorio de paciencia, entre 'PACIENCIA_MAXIMA_INICIAL' y 'PACIENCIA_MAXIMA_INICIAL'.
+int cantidad_aleatoria_paciencia() {
+    return (rand() % (PACIENCIA_MAXIMA_INICIAL - PACIENCIA_MINIMA_INICIAL + 1)) + PACIENCIA_MINIMA_INICIAL;
+}
+
+// POST: Devuelve un valor aleatorio que representa una opción de pedido, entre 1 y 'MAX_OPCIONES_MENU'.
+int pedido_aleatorio() {
+    return (rand() % MAX_OPCIONES_MENU) + 1;
 }
 
 // POST: Devuelve true si las posiciones son iguales, de lo contrario devuelve false.
