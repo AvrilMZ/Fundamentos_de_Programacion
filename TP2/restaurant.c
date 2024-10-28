@@ -8,10 +8,12 @@
 #define DERECHA 'D'
 #define IZQUIERDA 'A'
 #define MOPA 'O'
+#define TOMAR_PEDIDO 'T'
+#define USAR_PATINES 'P'
 #define CHARCO 'H'
 #define MONEDA 'M'
 #define PATINES 'P'
-#define CUCARACHA ' '
+#define CUCARACHA 'U'
 #define MAX_MESAS_INDIVIDUALES 6
 #define MAX_MESAS_GRUPALES 4
 #define CANTIDAD_LUGARES_MESA_GRUPAL 4
@@ -19,7 +21,12 @@
 
 const char LINGUINI = 'L';
 const char MESA = 'T';
+const char MESA_OCUPADA = 'X';
 const char COCINA = 'C';
+const char MILANESA_NAPOLITANA = 'M';
+const char HAMBURGUESA = 'H';
+const char PARRILLA = 'P';
+const char RATATOUILLE = 'R';
 const char VACIO = ' ';
 
 const int CANTIDAD_LUGARES_MESA_INDIVIDUAL = 1;
@@ -30,6 +37,21 @@ const int CANTIDAD_PATINES = 5;
 const int CANTIDAD_CUCARACHAS = 0;
 const int OBJETIVO_DINERO = 150000;
 const int MAX_MOVIMIENTOS = 200;
+const int MAX_OPCIONES_MENU = 4;
+const int VALOR_MONEDA = 1000;
+const int VALOR_MESA_INDIVIDUAL = 5000;
+const int VALOR_MESA_GRUPAL = 20000;
+const int PACIENCIA_MINIMA_INICIAL = 100;
+const int PACIENCIA_MAXIMA_INICIAL = 200;
+const int PREPARACION_MILANESA = 30;
+const int PREPARACION_HAMBURGUESA = 15;
+const int PREPARACION_PARRILLA = 20;
+const int PREPARACION_RATATOUILLE = 25;
+const int APARICION_COMENSALES = 15;
+const int APARICION_CUCARACHAS = 25;
+const int DISMINUCION_PACIENCIA_CUCARACHA = 2;
+const int DISTANCIA_MESA_CUCARACHA = 2;
+const int DISTANCIA_MESA_MOZO = 1;
 
 // POST: Devuelve una posición aleatoria.
 coordenada_t posicion_aleatoria() {
@@ -487,4 +509,10 @@ void mostrar_juego(juego_t juego) {
     system("clear");
     inicializar_terreno(juego);
     informacion_util(juego);
+}
+
+/* PRE: Los campos 'platos_preparacion' y 'platos_listos' del campo 'cocina' del juego deben estar inicializados.
+   POST: Libera la memoria dinámica reservada para el juego.*/
+void destruir_juego(juego_t *juego) {
+
 }
