@@ -29,12 +29,13 @@ const char PARRILLA = 'P';
 const char RATATOUILLE = 'R';
 const char VACIO = ' ';
 
+const int APARICION_COMENSALES = 15;
+const int APARICION_CUCARACHAS = 25;
 const int CANTIDAD_LUGARES_MESA_INDIVIDUAL = 1;
 const int CANTIDAD_MOPAS = 1;
 const int CANTIDAD_CHARCOS = 5;
 const int CANTIDAD_MONEDAS = 8;
 const int CANTIDAD_PATINES = 5;
-const int CANTIDAD_CUCARACHAS = 0;
 const int OBJETIVO_DINERO = 150000;
 const int MAX_MOVIMIENTOS = 200;
 const int MAX_OPCIONES_MENU = 4;
@@ -47,8 +48,6 @@ const int PREPARACION_MILANESA = 30;
 const int PREPARACION_HAMBURGUESA = 15;
 const int PREPARACION_PARRILLA = 20;
 const int PREPARACION_RATATOUILLE = 25;
-const int APARICION_COMENSALES = 15;
-const int APARICION_CUCARACHAS = 25;
 const int DISMINUCION_PACIENCIA_CUCARACHA = 2;
 const int DISTANCIA_MESA_CUCARACHA = 2;
 const int DISTANCIA_MESA_MOZO = 1;
@@ -71,7 +70,7 @@ coordenada_t asignar_posicion_vacia() {
 
 // POST: Devuelve un valor aleatorio de comensales, entre 1 y 'MAX_MESAS_GRUPALES'.
 int cantidad_aleatoria_comensales() {
-    return (rand() % MAX_MESAS_GRUPALES) + 1;
+    return (rand() % CANTIDAD_LUGARES_MESA_GRUPAL) + 1;
 }
 
 // POST: Devuelve un valor aleatorio de paciencia, entre 'PACIENCIA_MAXIMA_INICIAL' y 'PACIENCIA_MAXIMA_INICIAL'.
@@ -87,6 +86,11 @@ int pedido_aleatorio() {
 // POST: Devuelve true si las posiciones son iguales, de lo contrario devuelve false.
 bool son_posiciones_iguales(coordenada_t coordenada, coordenada_t coordenada_a_comparar) {
     return (coordenada.fil == coordenada_a_comparar.fil && coordenada.col == coordenada_a_comparar.col);
+}
+
+//POST: Devuelve la distancia manhattan entre dos puntos dados.
+int distancia_manhattan(coordenada_t punto1, coordenada_t punto2) {
+    return abs(punto1.col - punto2.col) + abs(punto1.fil - punto2.fil);
 }
 
 /* PRE: - 'mesas' no debe estar vacio;
@@ -270,6 +274,45 @@ void inicializar_mesa(juego_t *juego) {
     inicializar_mesa_grupal(juego);
 }
 
+/* PRE: - 'mesas' no debe estar vacio;
+        - 'tope_mesas' debe ser mayor estricto a cero y menor o igual a 'MAX_MESAS';
+   POST: Asigna cada 'APARICION_COMENSALES' movimientos una cantidad aleatoria de comensales, entre 1 y 'CANTIDAD_LUGARES_MESA_GRUPAL', a la primer mesa vacia disponible.*/
+void distribuir_comensales(mesa_t mesas[MAX_MESAS], int tope_mesas, int movimientos) {
+    if (movimientos % APARICION_COMENSALES == 0) {
+        int comensales_sin_asiento = cantidad_aleatoria_comensales();
+        bool lugares_asignados = false;
+
+        for (int i = 0; i < tope_mesas && !lugares_asignados; i++) {
+            if (mesas[i].cantidad_lugares >= comensales_sin_asiento && mesas[i].cantidad_comensales == 0) {
+                mesas[i].cantidad_comensales = comensales_sin_asiento;
+                lugares_asignados = true;
+            }
+        }
+    }
+}
+
+/* PRE: - 'mesas' no debe estar vacio;
+        - 'tope_mesas' debe ser mayor estricto a cero y menor o igual a 'MAX_MESAS';
+   POST: Le asigna a las mesas con comensales nuevos una cantidad de paciencia aleatoria entre 'PACIENCIA_MINIMA_INICIAL' y 'PACIENCIA_MAXIMA_INICIAL'.*/
+void asignar_paciencia(mesa_t mesas[MAX_MESAS], int tope_mesas) {
+    for (int i = 0; i < tope_mesas; i++) {
+        if (mesas[i].cantidad_comensales > 0 && mesas[i].paciencia == 0) {
+            mesas[i].paciencia = cantidad_aleatoria_paciencia();
+        }
+    }
+}
+
+/* PRE: - 'mesas' no debe estar vacio;
+        - 'tope_mesas' debe ser mayor estricto a cero y menor o igual a 'MAX_MESAS';
+   POST: Decrementa una unidad de paciencia a cada mesa, únicamente si tiene.*/
+void perdida_paciencia(mesa_t mesas[MAX_MESAS], int tope_mesas) {
+    for (int i = 0; i < tope_mesas; i++) {
+        if (mesas[i].paciencia > 0) {
+            mesas[i].paciencia--;
+        }
+    }
+}
+
 // POST: Inicializa al personaje en una posición aleatoria, si esta ya está ocupada le asigna nuevamente otra aleatoria.
 void inicializar_linguini(juego_t *juego) {
     juego->mozo.cantidad_patines = 0;
@@ -284,6 +327,20 @@ void inicializar_linguini(juego_t *juego) {
         intentos++;
         if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return;
     } while (!es_posicion_vacia(*juego, juego->mozo.posicion));
+}
+
+/* PRE: - 'mesas' no debe estar vacio;
+        - 'tope_mesas' debe ser mayor estricto a cero y menor o igual a 'MAX_MESAS'.
+   POST: Devuelve 'true' si Linguini se encuentra a una distancia 'DISTANCIA_MESA_MOZO' de cualquier mesa no vacia, de lo contrario devuelve false.*/
+bool es_posible_tomar_pedido(coordenada_t posicion_linguini, mesa_t mesas[MAX_MESAS], int tope_mesas) {
+    for (int i = 0; i < tope_mesas; i++) {
+        if (mesas[i].cantidad_comensales > 0) {
+            for (int j = 0; j < mesas[i].cantidad_lugares; j++) {
+                if (distancia_manhattan(posicion_linguini, mesas[i].posicion[j]) == DISTANCIA_MESA_MOZO) return true;
+            }
+        }
+    }
+    return false;
 }
 
 // POST: Inicializa a la cocina en una posicion aleatoria, si esta ya está ocupada le asigna nuevamente otra aleatoria.
@@ -318,10 +375,9 @@ void inicializar_herramienta(juego_t *juego, char tipo_herramienta, int cantidad
 }
 
 /* PRE: - El tope 'cantidad_obstaculos' de 'obstaculos' dentro de 'juego' debe estar correctamente inicializado;
-        - 'tipo_obstaculo' debe ser un char válido para un obstáculo;
         - 'cantidad_obstaculo' debe ser mayor estricto a cero y menor o igual a 'MAX_OBSTACULOS'.
-   POST: Inicializa un obstáculo en una posición aleatoria, si esta ya está ocupada le asigna nuevamente otra aleatoria.*/
-void inicializar_obstaculo(juego_t *juego, char tipo_obstaculo, int cantidad_obstaculo) {
+   POST: Inicializa la cantidad de charcos pasada en una posición aleatoria, si esta ya está ocupada le asigna nuevamente otra aleatoria.*/
+void inicializar_charco(juego_t *juego, int cantidad_obstaculo) {
     coordenada_t posicion;    
 
     for (int i = 0; i < cantidad_obstaculo; i++) {
@@ -332,9 +388,65 @@ void inicializar_obstaculo(juego_t *juego, char tipo_obstaculo, int cantidad_obs
             if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return; 
         } while (!es_posicion_vacia(*juego, posicion));
 
-        juego->obstaculos[juego->cantidad_obstaculos].tipo = tipo_obstaculo;
+        juego->obstaculos[juego->cantidad_obstaculos].tipo = CHARCO;
         juego->obstaculos[juego->cantidad_obstaculos].posicion = posicion;
         juego->cantidad_obstaculos++;
+    }
+}
+
+/* PRE: - El tope 'cantidad_obstaculos' de 'obstaculos' dentro de 'juego' debe estar correctamente inicializado;
+        - 'cantidad_obstaculo' debe ser mayor estricto a cero y menor o igual a 'MAX_OBSTACULOS'.
+   POST: Inicializa una cucaracha cada 'APARICION_CUCARACHAS' movimientos en una posición aleatoria, si esta ya está ocupada le asigna nuevamente otra aleatoria.*/
+void inicializar_cucaracha(juego_t *juego) {
+    if (juego->movimientos % APARICION_CUCARACHAS == 0) {
+        coordenada_t posicion;
+        int intentos = 0;
+
+        do {
+            posicion = posicion_aleatoria();
+            intentos++;
+            if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return; 
+        } while (!es_posicion_vacia(*juego, posicion));
+
+        juego->obstaculos[juego->cantidad_obstaculos].tipo = CUCARACHA;
+        juego->obstaculos[juego->cantidad_obstaculos].posicion = posicion;
+        juego->cantidad_obstaculos++;
+    }
+}
+
+/* PRE: - 'obstaculos' no debe estar vacio;
+        - 'tope_obstaculos' debe ser mayor estricto a cero y menor o igual a 'MAX_OBSTACULOS';
+        - 'mesas' no debe estar vacio;
+        - 'tope_mesas' debe ser mayor estricto a cero y menor o igual a 'MAX_MESAS'.
+   POST: Si una cucaracha se encuentra a una distancia manhattan menor o igual a 'DISTANCIA_MESA_CUCARACHA' de una mesa, a esa se le quita un valor de 'DISMINUCION_PACIENCIA_CUCARACHA'.*/
+void perdida_paciencia_cucarachas(objeto_t obstaculos[MAX_OBSTACULOS], int tope_obstaculos, mesa_t mesas[MAX_MESAS], int tope_mesas) {
+    for (int i = 0; i < tope_obstaculos; i++) {
+        if (obstaculos[i].tipo == CUCARACHA) {
+            coordenada_t posicion_cucaracha = obstaculos[i].posicion;
+            for (int j = 0; j < tope_mesas; j++) {
+                for (int k = 0; k < mesas[j].cantidad_lugares; k++) {
+                    if (mesas[j].cantidad_comensales > 0 && distancia_manhattan(mesas[j].posicion[k], posicion_cucaracha) <= DISTANCIA_MESA_CUCARACHA) {
+                        mesas[j].paciencia -= DISMINUCION_PACIENCIA_CUCARACHA;
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* PRE: - 'posicion_linguini' debe estar dentro del rango del terreno de juego;
+        - 'obstaculos' no debe estar vacio;
+        - 'tope_obstaculos' debe ser mayor estricto a cero y menor o igual a 'MAX_OBSTACULOS';
+   POST: Si Linguini pasa sobre una cucaracha, sin tener la mopa, esta se elimina de la posición.*/
+void matar_cucarachas(coordenada_t posicion_linguini, objeto_t obstaculos[MAX_OBSTACULOS], int* tope_obstaculos, bool tiene_mopa) {
+    if (tiene_mopa) return;
+    
+    for (int i = 0; i < *tope_obstaculos; i++) {
+        if (obstaculos[i].tipo == CUCARACHA && son_posiciones_iguales(posicion_linguini, obstaculos[i].posicion)) {
+            obstaculos[i] = obstaculos[*tope_obstaculos - 1];
+            (*tope_obstaculos)--;
+            i--;
+        }
     }
 }
 
@@ -358,6 +470,44 @@ char buscar_herramienta(objeto_t herramientas[MAX_HERRAMIENTAS], int tope_herram
     return VACIO;
 }
 
+/* PRE: - 'posicion_linguini' debe estar dentro del rango del terreno de juego;
+        - 'herramientas' no debe estar vacio;
+        - 'tope_herramientas' debe ser mayor estricto a cero y menor o igual a 'MAX_HERRAMIENTAS';
+        - 'dinero' debe estar inicializado.
+   POST: Si Linguini pasa sobre una moneda, sin tener la mopa, incrementa el total de dinero recolectado, con una cantidad de 'VALOR_MONEDA', y elimina la moneda de la posición.*/
+void recolectar_monedas(coordenada_t posicion_linguini, objeto_t herramientas[MAX_HERRAMIENTAS], int* tope_herramientas, int* dinero, bool tiene_mopa) {
+    if (tiene_mopa) return;
+    
+    for (int i = 0; i < *tope_herramientas; i++) {
+        if (herramientas[i].tipo == MONEDA && son_posiciones_iguales(posicion_linguini, herramientas[i].posicion)) {
+            *dinero += VALOR_MONEDA;
+
+            herramientas[i] = herramientas[*tope_herramientas - 1];
+            (*tope_herramientas)--;
+            i--;
+        }
+    }
+}
+
+/* PRE: - 'posicion_linguini' debe estar dentro del rango del terreno de juego;
+        - 'cantidad_patines' debe estar inicializado.
+        - 'herramientas' no debe estar vacio;
+        - 'tope_herramientas' debe ser mayor estricto a cero y menor o igual a 'MAX_HERRAMIENTAS';
+   POST: Si Linguini pasa sobre unos patines, sin tener la mopa, incrementa el contador 'cantidad_patines' y elimina los patines de la posición.*/
+void recolectar_patines(coordenada_t posicion_linguini, int* cantidad_patines, objeto_t herramientas[MAX_HERRAMIENTAS], int* tope_herramientas, bool tiene_mopa) {
+    if (tiene_mopa) return;
+    
+    for (int i = 0; i < *tope_herramientas; i++) {
+        if (herramientas[i].tipo == PATINES && son_posiciones_iguales(posicion_linguini, herramientas[i].posicion)) {
+            (*cantidad_patines)++;
+
+            herramientas[i] = herramientas[*tope_herramientas - 1];
+            (*tope_herramientas)--;
+            i--;
+        }
+    }
+}
+
 /* PRE: - 'obstaculos' no debe estar vacio;
         - 'tope_obstaculos' debe ser mayor estricto a cero y menor o igual a 'MAX_OBSTACULOS';
         - 'posicion' debe estar dentro del rango del terreno de juego.
@@ -374,6 +524,20 @@ char buscar_obstaculo(objeto_t obstaculos[MAX_OBSTACULOS], int tope_obstaculos, 
         }
     }
     return VACIO;
+}
+
+/* PRE: - 'posicion_linguini' debe estar dentro del rango del terreno de juego;
+        - 'obstaculos' no debe estar vacio;
+        - 'tope_obstaculos' debe ser mayor estricto a cero y menor o igual a 'MAX_OBSTACULOS';
+   POST: Si Linguini tiene la mopa y pasa sobre un charco este se elimina de la posición.*/
+void limpiar_charcos(coordenada_t posicion_linguini, bool tiene_mopa, objeto_t obstaculos[MAX_OBSTACULOS], int* tope_obstaculos) {
+    for (int i = 0; i < *tope_obstaculos; i++) {
+        if (obstaculos[i].tipo == CHARCO && son_posiciones_iguales(posicion_linguini, obstaculos[i].posicion) && tiene_mopa) {
+            obstaculos[i] = obstaculos[*tope_obstaculos - 1];
+            (*tope_obstaculos)--;
+            i--;
+        }
+    }
 }
 
 /* PRE: - Los topes dentro de 'juego' de 'mesas', 'herramientas' y 'obstaculos' deben estar correctamente inicializados;
@@ -494,8 +658,7 @@ void inicializar_juego(juego_t *juego) {
     inicializar_herramienta(juego, MOPA, CANTIDAD_MOPAS);
     inicializar_herramienta(juego, MONEDA, CANTIDAD_MONEDAS);
     inicializar_herramienta(juego, PATINES, CANTIDAD_PATINES);
-    inicializar_obstaculo(juego, CHARCO, CANTIDAD_CHARCOS);
-    inicializar_obstaculo(juego, CUCARACHA, CANTIDAD_CUCARACHAS);
+    inicializar_charco(juego, CANTIDAD_CHARCOS);
     inicializar_terreno(*juego);
 }
 
@@ -504,6 +667,11 @@ void inicializar_juego(juego_t *juego) {
    POST: Realizará la acción recibida por parámetro.*/
 void realizar_jugada(juego_t *juego, char accion) {
     realizar_movimiento(juego, accion);
+    inicializar_cucaracha(juego);
+    matar_cucarachas(juego->mozo.posicion, juego->obstaculos, &juego->cantidad_obstaculos, juego->mozo.tiene_mopa);
+    recolectar_monedas(juego->mozo.posicion, juego->herramientas, &juego->cantidad_herramientas, &juego->dinero, juego->mozo.tiene_mopa);
+    recolectar_patines(juego->mozo.posicion, &juego->mozo.cantidad_patines, juego->herramientas, &juego->cantidad_herramientas, juego->mozo.tiene_mopa);
+    limpiar_charcos(juego->mozo.posicion, juego->mozo.tiene_mopa, juego->obstaculos, &juego->cantidad_obstaculos);
 }
 
 /* PRE: El juego deberá estar inicializado previamente con `inicializar_juego`
@@ -512,7 +680,7 @@ void realizar_jugada(juego_t *juego, char accion) {
          - Se dará por perdido si se termina el día y no se llegó al monto.*/
 int estado_juego(juego_t juego) {
     if (juego.movimientos == MAX_MOVIMIENTOS) {
-        if (juego.dinero == OBJETIVO_DINERO) return 1;
+        if (juego.dinero >= OBJETIVO_DINERO) return 1;
         return -1;
     }
     return 0;
