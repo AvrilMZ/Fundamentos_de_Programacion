@@ -32,9 +32,9 @@ void accion_usuario(char* accion) {
    POST: Si el estado del juego es 1 devuelve que ganó, si es -1 devuelve que perdió.*/
 void cierre_juego(int estado) {
     if (estado == 1) {
-        printf("%s", GANAR);
+        printf("%s\n", GANAR);
     } else if (estado == -1) {
-        printf("%s", PERDER);
+        printf("%s\n", PERDER);
     }
 }
 
