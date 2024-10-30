@@ -9,21 +9,23 @@ const char ABAJO = 'S';
 const char DERECHA = 'D';
 const char IZQUIERDA = 'A';
 const char MOPA = 'O';
+const char TOMAR_PEDIDO = 'T';
+const char USAR_PATINES = 'P';
 const char* GANAR = "¡Ganaste!";
 const char* PERDER = "Perdiste";
 
 // POST: Devuelve 'true' si es un carácter de acción válida, de lo contrario devuelve 'false'.
 bool es_accion_valida(char accion) {
-    return (accion == ARRIBA || accion == ABAJO || accion == DERECHA || accion == IZQUIERDA || accion == MOPA);
+    return (accion == ARRIBA || accion == ABAJO || accion == DERECHA || accion == IZQUIERDA || accion == MOPA || accion == TOMAR_PEDIDO || accion == USAR_PATINES);
 }
 
 // POST: Solicita la interacción al usuario preguntando nuevamente si esta no es válida.
 void accion_usuario(char* accion) {
-    printf("Ingrese un movimiento (W/S/A/D) o interactúa con la mopa (O):\n");
+    printf("Ingrese un movimiento (W/S/A/D), interactúa con la mopa (O), usa los patines (P), ó toma pedidos (T):\n");
     scanf(" %c", accion);
 
     while (!es_accion_valida(*accion)) {
-        printf("Movimiento invalido. Ingrese un movimiento (W/S/A/D) ó interactue con la mopa (O):\n");
+        printf("Movimiento invalido. Ingrese un movimiento (W/S/A/D), interactúa con la mopa (O), usa los patines (P), ó toma pedidos (T):\n");
         scanf(" %c", accion);
     }
 }
