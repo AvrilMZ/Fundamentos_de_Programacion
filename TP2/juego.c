@@ -58,6 +58,7 @@ int main() {
     }
 
     cierre_juego(estado);
+    destruir_juego(&juego);
 
     return 0;
 }
