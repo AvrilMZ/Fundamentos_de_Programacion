@@ -64,14 +64,6 @@ coordenada_t posicion_aleatoria() {
     return posicion;
 }
 
-// POST: Devuelve una posición fuera del rango.
-coordenada_t asignar_posicion_vacia() {
-    coordenada_t posicion;
-    posicion.fil = -1;
-    posicion.col = -1;
-    return posicion;
-}
-
 // POST: Devuelve un valor aleatorio de comensales, entre 1 y 'MAX_MESAS_GRUPALES'.
 int cantidad_aleatoria_comensales() {
     return (rand() % CANTIDAD_LUGARES_MESA_GRUPAL) + 1;
@@ -108,6 +100,28 @@ bool son_posiciones_iguales(coordenada_t coordenada, coordenada_t coordenada_a_c
 //POST: Devuelve la distancia manhattan entre dos puntos dados.
 int distancia_manhattan(coordenada_t punto1, coordenada_t punto2) {
     return abs(punto1.col - punto2.col) + abs(punto1.fil - punto2.fil);
+}
+
+/* PRE: - 'vector' no debe estar vacio;
+        - 'tope' debe ser mayor estricto a cero;
+        - 'indice_a_eliminar' debe ser mayor a cero y menor o igual a 'tope' menos uno.
+   POST: Elimina el objeto en la posición 'indice_a_eliminar' de 'vector' mantieniendo el orden.*/
+void eliminar_objeto(objeto_t vector[], int *tope, int indice_a_eliminar) {
+    for (int i = indice_a_eliminar; i < *tope - 1; i++) {
+        vector[i] = vector[i + 1];
+    }
+    (*tope)--;
+}
+
+/* PRE: - 'vector' no debe estar vacio;
+        - 'tope' debe ser mayor estricto a cero;
+        - 'indice_a_eliminar' debe ser mayor a cero y menor o igual a 'tope' menos uno.
+   POST: Elimina el pedido en la posición 'indice_a_eliminar' de 'vector' mantieniendo el orden.*/
+void eliminar_pedido(pedido_t vector[], int *tope, int indice_a_eliminar) {
+    for (int i = indice_a_eliminar; i < *tope - 1; i++) {
+        vector[i] = vector[i + 1];
+    }
+    (*tope)--;
 }
 
 /* PRE: - 'mesas' no debe estar vacio;
@@ -295,7 +309,7 @@ void inicializar_mesa(juego_t *juego) {
         - 'tope_mesas' debe ser mayor estricto a cero y menor o igual a 'MAX_MESAS';
    POST: Asigna cada 'APARICION_COMENSALES' movimientos una cantidad aleatoria de comensales, entre 1 y 'CANTIDAD_LUGARES_MESA_GRUPAL', a la primer mesa vacia disponible.*/
 void distribuir_comensales(mesa_t mesas[MAX_MESAS], int tope_mesas, int movimientos) {
-    if (movimientos % APARICION_COMENSALES == 0) {
+    if (movimientos % APARICION_COMENSALES == 0 && movimientos > 0) {
         int comensales_sin_asiento = cantidad_aleatoria_comensales();
         bool lugares_asignados = false;
 
@@ -310,6 +324,7 @@ void distribuir_comensales(mesa_t mesas[MAX_MESAS], int tope_mesas, int movimien
 
 /* PRE: - 'mesas' no debe estar vacio;
         - 'tope_mesas' debe ser mayor estricto a cero y menor o igual a 'MAX_MESAS';
+        - 'paciencia' debe estar inicializado.
    POST: Le asigna a las mesas con comensales nuevos una cantidad de paciencia aleatoria entre 'PACIENCIA_MINIMA_INICIAL' y 'PACIENCIA_MAXIMA_INICIAL'.*/
 void asignar_paciencia(mesa_t mesas[MAX_MESAS], int tope_mesas) {
     for (int i = 0; i < tope_mesas; i++) {
@@ -321,13 +336,15 @@ void asignar_paciencia(mesa_t mesas[MAX_MESAS], int tope_mesas) {
 
 /* PRE: - 'mesas' no debe estar vacio;
         - 'tope_mesas' debe ser mayor estricto a cero y menor o igual a 'MAX_MESAS';
-   POST: Decrementa una unidad de paciencia a cada mesa, únicamente si tiene.*/
+        - 'paciencia' debe estar inicializado.
+   POST: Decrementa una unidad de paciencia a cada mesa, únicamente si tiene, y si llega a cero, 'cantidad_comensales' pasa a ser cero.*/
 void perdida_paciencia(mesa_t mesas[MAX_MESAS], int tope_mesas) {
     for (int i = 0; i < tope_mesas; i++) {
         if (mesas[i].paciencia > 0) {
             mesas[i].paciencia--;
-        }
+        } else mesas[i].cantidad_comensales = 0;
     }
+
 }
 
 // POST: Inicializa al personaje en una posición aleatoria, si esta ya está ocupada le asigna nuevamente otra aleatoria.
@@ -366,12 +383,12 @@ int mesa_posible_tomar_pedido(coordenada_t posicion_linguini, mesa_t mesas[MAX_M
 
 /* PRE: 'cantidad_pedidos' debe estar inicializado.
    POST: Devuelve el tiempo de preparación mayor entre todos los platos del pedido.*/
-int mayor_tiempo_preparacion(pedido_t pedidos[MAX_PEDIDOS], int cantidad_pedidos) {
+int mayor_tiempo_preparacion(char platos[MAX_PEDIDOS], int cantidad_platos) {
     int tiempo_preparacion_mayor = 0;
-    for (int i = 0; i < pedidos[cantidad_pedidos].cantidad_platos; i++) {
+    for (int i = 0; i < cantidad_platos; i++) {
         int tiempo_actual = 0;
 
-        switch (pedidos[cantidad_pedidos].platos[i]) {
+        switch (platos[i]) {
             case MILANESA_NAPOLITANA:
                 tiempo_actual = PREPARACION_MILANESA_NAPOLITANA;
                 break;
@@ -396,7 +413,7 @@ int mayor_tiempo_preparacion(pedido_t pedidos[MAX_PEDIDOS], int cantidad_pedidos
         - 'mesas' no debe estar vacio;
         - 'tope_mesas' debe ser mayor estricto a cero y menor o igual a 'MAX_MESAS'.
    POST: Toma el pedido de todos los comesales de una mesa guardandolo en el vector 'pedidos', si Linguini no tiene la mopa.*/
-void tomar_pedido(coordenada_t posicion_linguini, pedido_t pedidos[MAX_PEDIDOS], int* cantidad_pedidos, mesa_t mesas[MAX_MESAS], int tope_mesas, bool tiene_mopa) {
+void tomar_pedido(coordenada_t posicion_linguini, pedido_t pedidos[MAX_PEDIDOS], int *cantidad_pedidos, mesa_t mesas[MAX_MESAS], int tope_mesas, bool tiene_mopa) {
     if (tiene_mopa) return;
 
     int id_mesa_pedido = mesa_posible_tomar_pedido(posicion_linguini, mesas, tope_mesas);
@@ -411,7 +428,7 @@ void tomar_pedido(coordenada_t posicion_linguini, pedido_t pedidos[MAX_PEDIDOS],
             pedidos[*cantidad_pedidos].cantidad_platos++;
         }
 
-        pedidos[*cantidad_pedidos].tiempo_preparacion = mayor_tiempo_preparacion(pedidos, *cantidad_pedidos);
+        pedidos[*cantidad_pedidos].tiempo_preparacion = mayor_tiempo_preparacion(pedidos[*cantidad_pedidos].platos, pedidos[*cantidad_pedidos].cantidad_platos);
         (*cantidad_pedidos)++;
     }
 }
@@ -424,6 +441,66 @@ void inicializar_cocina(juego_t *juego) {
         intentos++;
         if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return;
     } while (!es_posicion_vacia(*juego, juego->cocina.posicion));
+}
+
+// POST: Reserva memoria dinamica para el vector 'platos_preparacion' de cocina e inicializa 'cantidad_preparacion'.
+void platos_en_preparacion(pedido_t **platos_preparacion, int *cantidad_preparacion) {
+    *platos_preparacion = malloc(sizeof(pedido_t) * MAX_PLATOS);
+    *cantidad_preparacion = 0;
+}
+
+// POST: Reserva memoria dinamica para el vector 'platos_listos' de cocina e inicializa 'cantidad_listos'.
+void platos_listos(pedido_t **platos_listos, int *cantidad_listos) {
+    *platos_listos = malloc(sizeof(pedido_t) * MAX_PLATOS);
+    *cantidad_listos = 0;
+}
+
+/* PRE: - 'posicion' en 'mozo' debe ser valida;
+        - 'cantidad_pedidos' y 'cantiadad_bandeja' en 'mozo' deben estar inicializados;
+        - 'cantidad_preparacion' y 'cantidad_listos' en 'cocina' deben estar inicializados.
+   POST: Si la posición de 'mozo' es igual a la de 'cocina': 
+            - 'mozo' le pasa los elementos de su vector 'pedidos' a 'cocina' en 'platos_preparacion', asignando el 'tiempo_preparacion';
+            - 'cocina' le pasa los elementos de su vector 'platos_listos' a 'mozo' en 'bandeja'.*/
+void interaccion_linguini_cocina(mozo_t *mozo, cocina_t *cocina) {
+    if (!son_posiciones_iguales(mozo->posicion, cocina->posicion)) return;
+
+    if (mozo->cantidad_pedidos > 0) {
+        for (int i = 0; i < mozo->cantidad_pedidos; i++) {
+            cocina->platos_preparacion[cocina->cantidad_preparacion] = mozo->pedidos[i];
+            cocina->cantidad_preparacion++;
+            eliminar_pedido(mozo->pedidos, &mozo->cantidad_pedidos, i);
+            i--;
+        }
+
+        for (int i = 0; i < cocina->cantidad_preparacion; i++) {
+            cocina->platos_preparacion[i].tiempo_preparacion = mayor_tiempo_preparacion(cocina->platos_preparacion[i].platos, cocina->platos_preparacion[i].cantidad_platos);
+        }
+    }
+
+    if (cocina->cantidad_listos > 0 && mozo->cantidad_bandeja < MAX_BANDEJA - 1) {
+        for (int i = 0; i < cocina->cantidad_listos; i++) {
+            mozo->bandeja[mozo->cantidad_bandeja] = cocina->platos_listos[i];
+            mozo->cantidad_bandeja++;
+            eliminar_pedido(cocina->platos_listos, &cocina->cantidad_listos, i);
+            i--;
+        }
+    }
+}
+
+/* PRE: 'cantidad_preparacion' y 'cantidad_listos' en 'cocina' deben estar inicializados.
+   POST: Cuando el elemento de 'platos_preparacion' llega a 'tiempo_preparacion' igual cero, este se pasa al vector 'platos_listos'.*/
+void preparacion_platos(cocina_t *cocina) {
+    for (int i = 0; i < cocina->cantidad_preparacion; i++) {
+        if (cocina->platos_preparacion[i].tiempo_preparacion > 0) {
+            cocina->platos_preparacion[i].tiempo_preparacion--;
+        }
+        if (cocina->platos_preparacion[i].tiempo_preparacion == 0) {
+            cocina->platos_listos[cocina->cantidad_listos] = cocina->platos_preparacion[i];
+            cocina->cantidad_listos++;
+            eliminar_pedido(cocina->platos_preparacion, &cocina->cantidad_preparacion, i);
+            i--;
+        }
+    }
 }
 
 /* PRE: - El tope 'cantidad_herramientas' de 'herramientas' dentro de 'juego' debe estar correctamente inicializado;
@@ -471,7 +548,7 @@ void inicializar_charco(juego_t *juego, int cantidad_obstaculo) {
         - 'cantidad_obstaculo' debe ser mayor estricto a cero y menor o igual a 'MAX_OBSTACULOS'.
    POST: Inicializa una cucaracha cada 'APARICION_CUCARACHAS' movimientos en una posición aleatoria, si esta ya está ocupada le asigna nuevamente otra aleatoria.*/
 void inicializar_cucaracha(juego_t *juego) {
-    if (juego->movimientos % APARICION_CUCARACHAS == 0) {
+    if (juego->movimientos % APARICION_CUCARACHAS == 0 && juego->movimientos > 0) {
         coordenada_t posicion;
         int intentos = 0;
 
@@ -490,7 +567,8 @@ void inicializar_cucaracha(juego_t *juego) {
 /* PRE: - 'obstaculos' no debe estar vacio;
         - 'tope_obstaculos' debe ser mayor estricto a cero y menor o igual a 'MAX_OBSTACULOS';
         - 'mesas' no debe estar vacio;
-        - 'tope_mesas' debe ser mayor estricto a cero y menor o igual a 'MAX_MESAS'.
+        - 'tope_mesas' debe ser mayor estricto a cero y menor o igual a 'MAX_MESAS';
+        - 'paciencia' debe estar inicializado.
    POST: Si una cucaracha se encuentra a una distancia manhattan menor o igual a 'DISTANCIA_MESA_CUCARACHA' de una mesa, a esa se le quita un valor de 'DISMINUCION_PACIENCIA_CUCARACHA'.*/
 void perdida_paciencia_cucarachas(objeto_t obstaculos[MAX_OBSTACULOS], int tope_obstaculos, mesa_t mesas[MAX_MESAS], int tope_mesas) {
     for (int i = 0; i < tope_obstaculos; i++) {
@@ -511,7 +589,7 @@ void perdida_paciencia_cucarachas(objeto_t obstaculos[MAX_OBSTACULOS], int tope_
         - 'obstaculos' no debe estar vacio;
         - 'tope_obstaculos' debe ser mayor estricto a cero y menor o igual a 'MAX_OBSTACULOS';
    POST: Si Linguini pasa sobre una cucaracha, sin tener la mopa, esta se elimina de la posición.*/
-void matar_cucarachas(coordenada_t posicion_linguini, objeto_t obstaculos[MAX_OBSTACULOS], int* tope_obstaculos, bool tiene_mopa) {
+void matar_cucarachas(coordenada_t posicion_linguini, objeto_t obstaculos[MAX_OBSTACULOS], int *tope_obstaculos, bool tiene_mopa) {
     if (tiene_mopa) return;
     
     for (int i = 0; i < *tope_obstaculos; i++) {
@@ -548,7 +626,7 @@ char buscar_herramienta(objeto_t herramientas[MAX_HERRAMIENTAS], int tope_herram
         - 'tope_herramientas' debe ser mayor estricto a cero y menor o igual a 'MAX_HERRAMIENTAS';
         - 'dinero' debe estar inicializado.
    POST: Si Linguini pasa sobre una moneda, sin tener la mopa, incrementa el total de dinero recolectado, con una cantidad de 'VALOR_MONEDA', y elimina la moneda de la posición.*/
-void recolectar_monedas(coordenada_t posicion_linguini, objeto_t herramientas[MAX_HERRAMIENTAS], int* tope_herramientas, int* dinero, bool tiene_mopa) {
+void recolectar_monedas(coordenada_t posicion_linguini, objeto_t herramientas[MAX_HERRAMIENTAS], int *tope_herramientas, int *dinero, bool tiene_mopa) {
     if (tiene_mopa) return;
     
     for (int i = 0; i < *tope_herramientas; i++) {
@@ -563,11 +641,11 @@ void recolectar_monedas(coordenada_t posicion_linguini, objeto_t herramientas[MA
 }
 
 /* PRE: - 'posicion_linguini' debe estar dentro del rango del terreno de juego;
-        - 'cantidad_patines' debe estar inicializado.
+        - 'cantidad_patines' debe estar inicializado;
         - 'herramientas' no debe estar vacio;
-        - 'tope_herramientas' debe ser mayor estricto a cero y menor o igual a 'MAX_HERRAMIENTAS';
+        - 'tope_herramientas' debe ser mayor estricto a cero y menor o igual a 'MAX_HERRAMIENTAS'.
    POST: Si Linguini pasa sobre unos patines, sin tener la mopa, incrementa el contador 'cantidad_patines' y elimina los patines de la posición.*/
-void recolectar_patines(coordenada_t posicion_linguini, int* cantidad_patines, objeto_t herramientas[MAX_HERRAMIENTAS], int* tope_herramientas, bool tiene_mopa) {
+void recolectar_patines(coordenada_t posicion_linguini, int *cantidad_patines, objeto_t herramientas[MAX_HERRAMIENTAS], int *tope_herramientas, bool tiene_mopa) {
     if (tiene_mopa) return;
     
     for (int i = 0; i < *tope_herramientas; i++) {
@@ -578,36 +656,6 @@ void recolectar_patines(coordenada_t posicion_linguini, int* cantidad_patines, o
             (*tope_herramientas)--;
             i--;
         }
-    }
-}
-
-/* PRE: - La posición de 'mozo' en 'juego' ya debe estar inicializada;
-        - La 'cantidad_patines' de 'mozo' ya debe estar inicializada; 
-        - El tope 'cantidad_mesas' de 'mesas' dentro de 'juego' debe estar correctamente inicializado.
-   POST: Mueve al mozo a traves de toda la fila o columna, o hasta que se encuentre con una mesa, interactuando con todos los elementos en su camino.*/
-void utilizar_patines(juego_t* juego, char accion) {
-    if (accion != ARRIBA && accion != ABAJO && accion != DERECHA && accion != IZQUIERDA) return;
-
-    if (juego->mozo.cantidad_patines > 0) {
-        coordenada_t nueva_posicion = juego->mozo.posicion;
-
-        switch (accion) {
-            case ARRIBA:
-                while (nueva_posicion.fil > 0 && !hay_mesa(juego->mesas, juego->cantidad_mesas, nueva_posicion)) nueva_posicion.fil--;
-                break;
-            case ABAJO:
-                while (nueva_posicion.fil < MAX_FILAS - 1 && !hay_mesa(juego->mesas, juego->cantidad_mesas, nueva_posicion)) nueva_posicion.fil++;
-                break;
-            case DERECHA:
-                while (nueva_posicion.col < MAX_COLUMNAS - 1 && !hay_mesa(juego->mesas, juego->cantidad_mesas, nueva_posicion)) nueva_posicion.col++;
-                break;
-            case IZQUIERDA:
-                while (nueva_posicion.col > 0 && !hay_mesa(juego->mesas, juego->cantidad_mesas, nueva_posicion)) nueva_posicion.col--;
-                break;
-        }
-
-        juego->mozo.posicion = nueva_posicion;
-        juego->mozo.cantidad_patines--;
     }
 }
 
@@ -631,9 +679,9 @@ char buscar_obstaculo(objeto_t obstaculos[MAX_OBSTACULOS], int tope_obstaculos, 
 
 /* PRE: - 'posicion_linguini' debe estar dentro del rango del terreno de juego;
         - 'obstaculos' no debe estar vacio;
-        - 'tope_obstaculos' debe ser mayor estricto a cero y menor o igual a 'MAX_OBSTACULOS';
+        - 'tope_obstaculos' debe ser mayor estricto a cero y menor o igual a 'MAX_OBSTACULOS'.
    POST: Si Linguini tiene la mopa y pasa sobre un charco este se elimina de la posición.*/
-void limpiar_charcos(coordenada_t posicion_linguini, bool tiene_mopa, objeto_t obstaculos[MAX_OBSTACULOS], int* tope_obstaculos) {
+void limpiar_charcos(coordenada_t posicion_linguini, bool tiene_mopa, objeto_t obstaculos[MAX_OBSTACULOS], int *tope_obstaculos) {
     for (int i = 0; i < *tope_obstaculos; i++) {
         if (obstaculos[i].tipo == CHARCO && son_posiciones_iguales(posicion_linguini, obstaculos[i].posicion) && tiene_mopa) {
             obstaculos[i] = obstaculos[*tope_obstaculos - 1];
@@ -643,11 +691,38 @@ void limpiar_charcos(coordenada_t posicion_linguini, bool tiene_mopa, objeto_t o
     }
 }
 
+/* PRE: - 'posicion_linguini' debe estar dentro del rango del terreno de juego;
+        - 'tope_bandeja' debe estar inicializado;
+        - 'obstaculos' no debe estar vacio;
+        - 'tope_obstaculos' debe ser mayor estricto a cero y menor o igual a 'MAX_OBSTACULOS';
+        - 'mesas' no debe estar vacio;
+        - 'tope_mesas' debe ser mayor estricto a cero y menor o igual a 'MAX_MESAS'.
+   POST: Si 'posicion_linguini' es la misma que la de un 'CHARCO' entonces el vector 'bandeja' se vacia y la mesa cuyo pedido correspondia pasa a tener 'cantiadad_comesales' cero.*/
+void resbalar_charcos(coordenada_t posicion_linguini, pedido_t bandeja[MAX_BANDEJA], int *tope_bandeja, objeto_t obstaculos[MAX_OBSTACULOS], int tope_obstaculos, mesa_t mesas[MAX_MESAS], int tope_mesas) {
+    for (int i = 0; i < tope_obstaculos; i++) {
+        if (obstaculos[i].tipo == CHARCO && son_posiciones_iguales(obstaculos[i].posicion, posicion_linguini) && *tope_bandeja > 0) {
+            for (int j = 0; j < *tope_bandeja; j++) {
+                mesas[bandeja[j].id_mesa].cantidad_comensales = 0;
+            }
+            *tope_bandeja = 0;
+        }
+    }
+}
+
 /* PRE: - Los topes dentro de 'juego' de 'mesas', 'herramientas' y 'obstaculos' deben estar correctamente inicializados;
         - 'posicion' debe estar dentro del rango del terreno de juego.
    POST: Devuelve el carácter correspondiente al contenido en la posición.*/
 char obtener_contenido_posicion(juego_t juego, coordenada_t posicion) {
-    if (hay_mesa(juego.mesas, juego.cantidad_mesas, posicion)) return MESA;
+    if (hay_mesa(juego.mesas, juego.cantidad_mesas, posicion)) {
+        for (int i = 0; i < juego.cantidad_mesas; i++) {
+            for (int j = 0; j < juego.mesas[i].cantidad_lugares; j++) {
+                if (son_posiciones_iguales(juego.mesas[i].posicion[j], posicion)) {
+                    if (j < juego.mesas[i].cantidad_comensales) return MESA_OCUPADA;
+                    else return MESA;
+                }
+            }
+        }
+    }
 
     if (son_posiciones_iguales(juego.mozo.posicion, posicion)) return LINGUINI;
 
@@ -683,18 +758,72 @@ void inicializar_terreno(juego_t juego) {
    POST: - Si el mozo se encuentra en la posición de la mopa y no la tiene, la agarra y se elimina la posición;
          - Si el mozo tiene la mopa y la posición no está ocupada, deja la mopa.*/
 void utilizar_mopa(juego_t *juego) {
-    coordenada_t posicion_mopa = juego->herramientas[0].posicion;
-    if (son_posiciones_iguales(juego->mozo.posicion, posicion_mopa)) {
-        if (!juego->mozo.tiene_mopa) {
-            juego->mozo.tiene_mopa = true;
-            juego->herramientas[0].posicion = asignar_posicion_vacia();
-        }
-    } else if (juego->mozo.tiene_mopa) {
+    if (juego->mozo.tiene_mopa) {
         if (es_posicion_vacia_excepto_linguini(*juego, juego->mozo.posicion)) {
             juego->mozo.tiene_mopa = false;
-            juego->herramientas[0].posicion = juego->mozo.posicion;
+            juego->herramientas[juego->cantidad_herramientas].posicion = juego->mozo.posicion;
+            juego->herramientas[juego->cantidad_herramientas].tipo = MOPA;
+            juego->cantidad_herramientas++;
+        }
+    } else {
+        for (int i = 0; i < juego->cantidad_herramientas; i++) {
+            if (juego->herramientas[i].tipo == MOPA) {
+                coordenada_t posicion_mopa = juego->herramientas[i].posicion;
+                if (son_posiciones_iguales(juego->mozo.posicion, posicion_mopa)) {
+                    if (!juego->mozo.tiene_mopa) {
+                        juego->mozo.tiene_mopa = true;
+                        eliminar_objeto(juego->herramientas, &juego->cantidad_herramientas, i);
+                    }
+                }
+            }
         }
     }
+}
+
+/* PRE: - La posición de 'mozo' en 'juego' ya debe estar inicializada;
+        - La 'cantidad_patines' de 'mozo' debe ser mayor estricto que cero; 
+        - El tope 'cantidad_mesas' de 'mesas' dentro de 'juego' debe estar correctamente inicializado;
+        - 'patines_puestos' debe ser 'true'.
+   POST: Mueve al mozo a traves de toda la fila o columna, o hasta que se encuentre con una mesa, interactuando con todos los elementos en su camino.*/
+void utilizar_patines(juego_t *juego, char accion) {
+    if (accion != ARRIBA && accion != ABAJO && accion != DERECHA && accion != IZQUIERDA) return;
+
+    coordenada_t nueva_posicion = juego->mozo.posicion;
+    bool continuar = true;
+
+    while (continuar) {
+        coordenada_t siguiente_posicion = nueva_posicion;
+        switch (accion) {
+            case ARRIBA:
+                siguiente_posicion.fil--;
+                break;
+            case ABAJO:
+                siguiente_posicion.fil++;
+                break;
+            case DERECHA:
+                siguiente_posicion.col++;
+                break;
+            case IZQUIERDA:
+                siguiente_posicion.col--;
+                break;
+        }
+
+        if (siguiente_posicion.fil < 0 || siguiente_posicion.fil >= MAX_FILAS || siguiente_posicion.col < 0 || siguiente_posicion.col >= MAX_COLUMNAS || hay_mesa(juego->mesas, juego->cantidad_mesas, siguiente_posicion))
+            continuar = false;
+        else {
+            nueva_posicion = siguiente_posicion;
+            juego->mozo.posicion = nueva_posicion;
+
+            matar_cucarachas(juego->mozo.posicion, juego->obstaculos, &juego->cantidad_obstaculos, juego->mozo.tiene_mopa);
+            recolectar_monedas(juego->mozo.posicion, juego->herramientas, &juego->cantidad_herramientas, &juego->dinero, juego->mozo.tiene_mopa);
+            recolectar_patines(juego->mozo.posicion, &juego->mozo.cantidad_patines, juego->herramientas, &juego->cantidad_herramientas, juego->mozo.tiene_mopa);
+            limpiar_charcos(juego->mozo.posicion, juego->mozo.tiene_mopa, juego->obstaculos, &juego->cantidad_obstaculos);
+            resbalar_charcos(juego->mozo.posicion, juego->mozo.bandeja, &juego->mozo.cantidad_bandeja, juego->obstaculos, juego->cantidad_obstaculos, juego->mesas, juego->cantidad_mesas);
+        }
+    }
+
+    juego->mozo.patines_puestos = false;
+    juego->mozo.cantidad_patines--;
 }
 
 /* PRE: - La posición de 'mozo' en 'juego' ya debe estar inicializada;
@@ -720,14 +849,17 @@ void realizar_movimiento(juego_t *juego, char accion) {
             break;
         case MOPA:
             utilizar_mopa(juego);
-            return;
+            break;
         case TOMAR_PEDIDO:
             tomar_pedido(juego->mozo.posicion, juego->mozo.pedidos, &juego->mozo.cantidad_pedidos, juego->mesas, juego->cantidad_mesas, juego->mozo.tiene_mopa);
-            return;
+            break;
         case USAR_PATINES:
-            char siguiente_accion = ' ';
-            scanf(" %c", &siguiente_accion);
-            utilizar_patines(juego, siguiente_accion);
+            if (juego->mozo.cantidad_patines > 0) {
+                juego->mozo.patines_puestos = true;
+                char siguiente_accion = ' ';
+                scanf(" %c", &siguiente_accion);
+                utilizar_patines(juego, siguiente_accion);
+            }
             return;
     }
 
@@ -752,6 +884,14 @@ void informacion_util(juego_t juego) {
         }
     }
 
+    if (juego.mozo.cantidad_patines == 0) printf("No tenés patines.\n");
+    else if (juego.mozo.cantidad_patines == 1) printf("Tenés %i par de patines.\n", juego.mozo.cantidad_patines);
+    else printf("Tenés %i pares de patines.\n", juego.mozo.cantidad_patines);
+
+    printf("Pedidos tomados: %i\n", juego.mozo.cantidad_pedidos);
+    printf("Pedidos listos en cocina: %i\n", juego.cocina.cantidad_listos);
+    printf("Pedidos a entregar: %i\n", juego.mozo.cantidad_bandeja);
+    
     printf("Realizó %i/%i movimientos.\n", juego.movimientos, MAX_MOVIMIENTOS);
     printf("Objetivo de monedas %i/%i.\n", juego.dinero, OBJETIVO_DINERO);
 }
@@ -772,6 +912,9 @@ void inicializar_juego(juego_t *juego) {
     inicializar_herramienta(juego, PATINES, CANTIDAD_PATINES);
     inicializar_charco(juego, CANTIDAD_CHARCOS);
     inicializar_terreno(*juego);
+
+    platos_en_preparacion(&juego->cocina.platos_preparacion, &juego->cocina.cantidad_preparacion);
+    platos_listos(&juego->cocina.platos_listos, &juego->cocina.cantidad_listos);
 }
 
 /* PRE: - El juego debe estar inicializado previamente con `inicializar_juego`;
@@ -779,11 +922,22 @@ void inicializar_juego(juego_t *juego) {
    POST: Realizará la acción recibida por parámetro.*/
 void realizar_jugada(juego_t *juego, char accion) {
     realizar_movimiento(juego, accion);
+
+    distribuir_comensales(juego->mesas, juego->cantidad_mesas, juego->movimientos);
+    asignar_paciencia(juego->mesas, juego->cantidad_mesas);
+    perdida_paciencia(juego->mesas, juego->cantidad_mesas);
+
+    preparacion_platos(&juego->cocina);
+    interaccion_linguini_cocina(&juego->mozo, &juego->cocina);
+
     inicializar_cucaracha(juego);
     matar_cucarachas(juego->mozo.posicion, juego->obstaculos, &juego->cantidad_obstaculos, juego->mozo.tiene_mopa);
+    perdida_paciencia_cucarachas(juego->obstaculos, juego->cantidad_obstaculos,juego->mesas, juego->cantidad_mesas);
+    
     recolectar_monedas(juego->mozo.posicion, juego->herramientas, &juego->cantidad_herramientas, &juego->dinero, juego->mozo.tiene_mopa);
     recolectar_patines(juego->mozo.posicion, &juego->mozo.cantidad_patines, juego->herramientas, &juego->cantidad_herramientas, juego->mozo.tiene_mopa);
     limpiar_charcos(juego->mozo.posicion, juego->mozo.tiene_mopa, juego->obstaculos, &juego->cantidad_obstaculos);
+    resbalar_charcos(juego->mozo.posicion, juego->mozo.bandeja, &juego->mozo.cantidad_bandeja, juego->obstaculos, juego->cantidad_obstaculos, juego->mesas, juego->cantidad_mesas);
 }
 
 /* PRE: El juego deberá estar inicializado previamente con `inicializar_juego`
@@ -809,5 +963,6 @@ void mostrar_juego(juego_t juego) {
 /* PRE: Los campos 'platos_preparacion' y 'platos_listos' del campo 'cocina' del juego deben estar inicializados.
    POST: Libera la memoria dinámica reservada para el juego.*/
 void destruir_juego(juego_t *juego) {
-
+    free(juego->cocina.platos_preparacion);
+    free(juego->cocina.platos_listos);
 }
