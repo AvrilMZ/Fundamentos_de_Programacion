@@ -11,8 +11,6 @@ const char IZQUIERDA = 'A';
 const char MOPA = 'O';
 const char TOMAR_PEDIDO = 'T';
 const char USAR_PATINES = 'P';
-const char* GANAR = "¡Ganaste!";
-const char* PERDER = "Perdiste";
 
 // POST: Devuelve 'true' si es un carácter de acción válida, de lo contrario devuelve 'false'.
 bool es_accion_valida(char accion) {
@@ -34,9 +32,23 @@ void accion_usuario(char* accion) {
    POST: Si el estado del juego es 1 devuelve que ganó, si es -1 devuelve que perdió.*/
 void cierre_juego(int estado) {
     if (estado == 1) {
-        printf("%s\n", GANAR);
+        printf("\
+            ######      ###    ##    ##    ###     ######  ######## ######## \n \
+            ##    ##    ## ##   ###   ##   ## ##   ##    ##    ##    ##       \n \
+            ##         ##   ##  ####  ##  ##   ##  ##          ##    ##       \n \
+            ##   #### ##     ## ## ## ## ##     ##  ######     ##    ######   \n \
+            ##    ##  ######### ##  #### #########       ##    ##    ##       \n \
+            ##    ##  ##     ## ##   ### ##     ## ##    ##    ##    ##       \n \
+            ######   ##     ## ##    ## ##     ##  ######     ##    ######## \n");
     } else if (estado == -1) {
-        printf("%s\n", PERDER);
+        printf("\
+            ########  ######## ########  ########  ####  ######  ######## ######## \n \
+            ##     ## ##       ##     ## ##     ##  ##  ##    ##    ##    ##       \n \
+            ##     ## ##       ##     ## ##     ##  ##  ##          ##    ##       \n \
+            ########  ######   ########  ##     ##  ##   ######     ##    ######   \n \
+            ##        ##       ##   ##   ##     ##  ##        ##    ##    ##       \n \
+            ##        ##       ##    ##  ##     ##  ##  ##    ##    ##    ##       \n \
+            ##        ######## ##     ## ########  ####  ######     ##    ######## \n");
     }
 }
 
