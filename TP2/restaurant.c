@@ -3,11 +3,13 @@
 #include <time.h>
 #include "restaurant.h"
 
-#define ROJO "\e[31m"
-#define VERDE "\e[32m"
-#define AMARILLO "\e[33m"
-#define VIOLETA "\e[35m"
-#define CELESTE "\e[36m"
+#define ROJO_NEGRITA "\e[1;31m"
+#define VERDE_NEGRITA "\e[1;32m"
+#define AMARILLO_NEGRITA "\e[1;33m"
+#define AZUL_NEGRITA "\e[1;34m"
+#define VIOLETA_NEGRITA "\e[1;35m"
+#define CELESTE_NEGRITA "\e[1;36m"
+#define BLANCO_NEGRITA "\e[1;37m"
 #define NORMAL "\e[0m"
 
 #define ARRIBA 'W'
@@ -154,6 +156,10 @@ bool es_posicion_vacia(juego_t juego, coordenada_t posicion) {
 
     if (hay_mesa(juego.mesas, juego.cantidad_mesas, posicion)) posicion_ocupada = true;
 
+    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) posicion_ocupada = true;
+
+    if (son_posiciones_iguales(juego.mozo.posicion, posicion)) posicion_ocupada = true;
+
     for (int i = 0; i < juego.cantidad_herramientas; i++) {
         if (son_posiciones_iguales(juego.herramientas[i].posicion, posicion)) posicion_ocupada = true;
     }
@@ -161,10 +167,6 @@ bool es_posicion_vacia(juego_t juego, coordenada_t posicion) {
     for (int i = 0; i < juego.cantidad_obstaculos; i++) {
         if (son_posiciones_iguales(juego.obstaculos[i].posicion, posicion)) posicion_ocupada = true;
     }
-
-    if (son_posiciones_iguales(juego.mozo.posicion, posicion)) posicion_ocupada = true;
-
-    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) posicion_ocupada = true;
 
     return !posicion_ocupada;
 }
@@ -177,6 +179,8 @@ bool es_posicion_vacia_excepto_linguini(juego_t juego, coordenada_t posicion) {
 
     if (hay_mesa(juego.mesas, juego.cantidad_mesas, posicion)) posicion_ocupada = true;
 
+    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) posicion_ocupada = true;
+
     for (int i = 0; i < juego.cantidad_herramientas; i++) {
         if (son_posiciones_iguales(juego.herramientas[i].posicion, posicion)) posicion_ocupada = true;
     }
@@ -184,8 +188,6 @@ bool es_posicion_vacia_excepto_linguini(juego_t juego, coordenada_t posicion) {
     for (int i = 0; i < juego.cantidad_obstaculos; i++) {
         if (son_posiciones_iguales(juego.obstaculos[i].posicion, posicion)) posicion_ocupada = true;
     }
-
-    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) posicion_ocupada = true;
 
     return !posicion_ocupada;
 }
@@ -792,15 +794,15 @@ char obtener_contenido_posicion(juego_t juego, coordenada_t posicion) {
         }
     }
 
-    if (son_posiciones_iguales(juego.mozo.posicion, posicion)) contenido = LINGUINI;
-
-    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) contenido = COCINA;
-
     char herramienta = buscar_herramienta(juego.herramientas, juego.cantidad_herramientas, posicion);
     if (herramienta != VACIO) contenido = herramienta;
 
     char obstaculo = buscar_obstaculo(juego.obstaculos, juego.cantidad_obstaculos, posicion);
     if (obstaculo != VACIO) contenido = obstaculo;
+
+    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) contenido = COCINA;
+
+    if (son_posiciones_iguales(juego.mozo.posicion, posicion)) contenido = LINGUINI;
 
     return contenido;
 }
@@ -838,16 +840,18 @@ void inicializar_terreno(juego_t juego) {
             }
 
             if (contenido_posicion == LINGUINI) {
-                printf("| %s%c%s  ", CELESTE, contenido_posicion, NORMAL);
+                printf("| %s%c%s  ", CELESTE_NEGRITA, contenido_posicion, NORMAL);
             } else if (contenido_posicion == COCINA || contenido_posicion == MOPA) {
-                printf("| %s%c%s  ", AMARILLO, contenido_posicion, NORMAL);
+                printf("| %s%c%s  ", AZUL_NEGRITA, contenido_posicion, NORMAL);
+            } else if (contenido_posicion == MONEDA) {
+            printf("| %s%c%s  ", AMARILLO_NEGRITA, contenido_posicion, NORMAL);
             } else if (contenido_posicion == CUCARACHA) {
-                printf("| %s%c%s  ", VIOLETA, contenido_posicion, NORMAL);
+                printf("| %s%c%s  ", VIOLETA_NEGRITA, contenido_posicion, NORMAL);
             } else if (es_mesa && !pedido_tomado && cantidad_comensales > 0) {
-                printf("| %s%c%s  ", ROJO, contenido_posicion, NORMAL);
+                printf("| %s%c%s  ", ROJO_NEGRITA, contenido_posicion, NORMAL);
             } else if (es_mesa && en_bandeja) {
-                printf("| %s%c%s  ", VERDE, contenido_posicion, NORMAL);
-            } else printf("| %c  ", contenido_posicion);
+                printf("| %s%c%s  ", VERDE_NEGRITA, contenido_posicion, NORMAL);
+            } else printf("| %s%c%s  ", BLANCO_NEGRITA, contenido_posicion, NORMAL);
         }
         printf("|\n");
     }
@@ -979,12 +983,14 @@ Cosas a tener en cuenta antes de jugar:\n\
 \t- El personaje de juego, Linguini, se encuentra representado con una %s%c%s;\n\
 \t- Las mesas ocupadas con pedidos a tomar se visualizan como %s%c%s;\n\
 \t- Las mesas cuyos pedidos están listos y ya han sido recolectados por Linguini se visualizan como %s%c%s;\n\
+\t- Las monedas se visualizarán con una %s%c%s;\n\
 \t- Las cucarachas se visualizarán con una %s%c%s;\n\
-\t- La mopa (%s%c%s) y la cocina (%s%c%s) se visualizan en amarillo;\n\
-\t- El resto de los elementos, charcos (%c), patines (%c) y monedas (%c), se visualizan normalmente, además de las mesas desocupadas (%c).\n\
+\t- La mopa (%s%c%s) y la cocina (%s%c%s) se visualizan en azul;\n\
+\t- El resto de los elementos, charcos (%s%c%s), patines (%s%c%s) y monedas (%s%c%s), se visualizan normalmente, además de las mesas desocupadas (%s%c%s).\n\
 ¡Que lo disfrutes!\n\
 \n\
-", CELESTE, LINGUINI, NORMAL, ROJO, MESA_OCUPADA, NORMAL, VERDE, MESA_OCUPADA, NORMAL, VIOLETA, CUCARACHA, NORMAL, AMARILLO, MOPA, NORMAL, AMARILLO, COCINA, NORMAL, CHARCO, PATINES, MONEDA, MESA);
+", CELESTE_NEGRITA, LINGUINI, NORMAL, ROJO_NEGRITA, MESA_OCUPADA, NORMAL, VERDE_NEGRITA, MESA_OCUPADA, NORMAL, AMARILLO_NEGRITA, MONEDA, NORMAL, VIOLETA_NEGRITA, CUCARACHA, NORMAL, 
+AZUL_NEGRITA, MOPA, NORMAL, AZUL_NEGRITA, COCINA, NORMAL, BLANCO_NEGRITA, CHARCO, NORMAL, BLANCO_NEGRITA, PATINES, NORMAL, BLANCO_NEGRITA, MONEDA, NORMAL, BLANCO_NEGRITA, MESA, NORMAL);
 }
 
 /* PRE: 'juego' debe estar correctamente inicializado.
