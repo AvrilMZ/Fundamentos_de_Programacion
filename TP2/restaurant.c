@@ -137,52 +137,57 @@ void eliminar_pedido(pedido_t vector[], int *tope, int indice_a_eliminar) {
         - 'posicion' debe estar dentro del rango del terreno de juego.
    POST: Devuelve true si hay una mesa en la posición especificada, de lo contrario devuelve false.*/
 bool hay_mesa(mesa_t mesas[MAX_MESAS], int tope_mesas, coordenada_t posicion) {
+    bool mesa_en_posicion = false;
     for (int i = 0; i < tope_mesas; i++) {
         for (int j = 0; j < mesas[i].cantidad_lugares; j++) {
-            if (son_posiciones_iguales(mesas[i].posicion[j], posicion)) return true;
+            if (son_posiciones_iguales(mesas[i].posicion[j], posicion)) mesa_en_posicion = true;
         }
     }
-    return false;
+    return mesa_en_posicion;
 }
 
 /* PRE: - Los topes dentro de 'juego' de 'mesas', 'herramientas' y 'obstaculos' deben estar correctamente inicializados;
         - 'posicion' debe estar dentro del rango del terreno de juego.
    POST: Devuelve true si la posicion no fue previamente asignada, de lo contrario devuelve false.*/
 bool es_posicion_vacia(juego_t juego, coordenada_t posicion) {
-    if (hay_mesa(juego.mesas, juego.cantidad_mesas, posicion)) return false;
+    bool posicion_ocupada = false;
+
+    if (hay_mesa(juego.mesas, juego.cantidad_mesas, posicion)) posicion_ocupada = true;
 
     for (int i = 0; i < juego.cantidad_herramientas; i++) {
-        if (son_posiciones_iguales(juego.herramientas[i].posicion, posicion)) return false;
+        if (son_posiciones_iguales(juego.herramientas[i].posicion, posicion)) posicion_ocupada = true;
     }
 
     for (int i = 0; i < juego.cantidad_obstaculos; i++) {
-        if (son_posiciones_iguales(juego.obstaculos[i].posicion, posicion)) return false;
+        if (son_posiciones_iguales(juego.obstaculos[i].posicion, posicion)) posicion_ocupada = true;
     }
 
-    if (son_posiciones_iguales(juego.mozo.posicion, posicion)) return false;
+    if (son_posiciones_iguales(juego.mozo.posicion, posicion)) posicion_ocupada = true;
 
-    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) return false;
+    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) posicion_ocupada = true;
 
-    return true;
+    return !posicion_ocupada;
 }
 
 /* PRE: - Los topes dentro de 'juego' de 'mesas', 'herramientas' y 'obstaculos' deben estar correctamente inicializados;
         - 'posicion' debe estar dentro del rango del terreno de juego.
    POST: Devuelve true si la posicion no fue previamente asignada (excluyendo a Linguini), de lo contrario devuelve false.*/
 bool es_posicion_vacia_excepto_linguini(juego_t juego, coordenada_t posicion) {
-    if (hay_mesa(juego.mesas, juego.cantidad_mesas, posicion)) return false;
+    bool posicion_ocupada = false;
+
+    if (hay_mesa(juego.mesas, juego.cantidad_mesas, posicion)) posicion_ocupada = true;
 
     for (int i = 0; i < juego.cantidad_herramientas; i++) {
-        if (son_posiciones_iguales(juego.herramientas[i].posicion, posicion)) return false;
+        if (son_posiciones_iguales(juego.herramientas[i].posicion, posicion)) posicion_ocupada = true;
     }
 
     for (int i = 0; i < juego.cantidad_obstaculos; i++) {
-        if (son_posiciones_iguales(juego.obstaculos[i].posicion, posicion)) return false;
+        if (son_posiciones_iguales(juego.obstaculos[i].posicion, posicion)) posicion_ocupada = true;
     }
 
-    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) return false;
+    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) posicion_ocupada = true;
 
-    return true;
+    return !posicion_ocupada;
 }
 
 /* PRE: - 'mesas' no debe estar vacio;
@@ -216,13 +221,13 @@ bool pasillos_libres(mesa_t mesas[MAX_MESAS], int tope_mesas, coordenada_t mesa_
     pasillo[7].fil = mesa_guia.fil + 1; // Abajo Derecha
     pasillo[7].col = mesa_guia.col + 1;
 
+    bool pasillos_ocupados = false;
     for (int i = 0; i < POSICIONES_PASILLO; i++) {
-        if (pasillo[i].fil >= 0 && pasillo[i].fil < MAX_FILAS && pasillo[i].col >= 0 && pasillo[i].col < MAX_COLUMNAS) {
-            if (hay_mesa(mesas, tope_mesas, pasillo[i])) return false;
-        }
+        bool posicion_valida = (pasillo[i].fil >= 0 && pasillo[i].fil < MAX_FILAS && pasillo[i].col >= 0 && pasillo[i].col < MAX_COLUMNAS);
+        if (posicion_valida && hay_mesa(mesas, tope_mesas, pasillo[i])) pasillos_ocupados = true;
     }
 
-    return true;
+    return !pasillos_ocupados;
 }
 
 /* PRE: El tope 'cantidad_mesas' de 'mesas' dentro de 'juego' debe estar correctamente inicializado.
@@ -263,25 +268,21 @@ bool posible_posiciones_mesa_grupal(juego_t *juego, int indice_mesa, coordenada_
     posiciones[3].fil = posicion_guia.fil + 1; // Abajo Derecha
     posiciones[3].col = posicion_guia.col + 1;
 
+    bool posiciones_ocupadas = false;
     for (int i = 0; i < CANTIDAD_LUGARES_MESA_GRUPAL; i++) {
-        if (!es_posicion_vacia(*juego, posiciones[i])) {
-            return false;
-        }
+        if (!es_posicion_vacia(*juego, posiciones[i])) posiciones_ocupadas = true;
     }
 
     for (int i = 0; i < CANTIDAD_LUGARES_MESA_GRUPAL; i++) {
-        if (!pasillos_libres(juego->mesas, juego->cantidad_mesas, posiciones[i])) {
-            return false;
-        }
+        if (!pasillos_libres(juego->mesas, juego->cantidad_mesas, posiciones[i])) posiciones_ocupadas = true;
     }
 
-    for (int i = 0; i < CANTIDAD_LUGARES_MESA_GRUPAL; i++) {
-        juego->mesas[indice_mesa].posicion[i] = posiciones[i];
+    if (!posiciones_ocupadas) {
+        for (int i = 0; i < CANTIDAD_LUGARES_MESA_GRUPAL; i++) juego->mesas[indice_mesa].posicion[i] = posiciones[i];
+        juego->mesas[indice_mesa].cantidad_lugares = CANTIDAD_LUGARES_MESA_GRUPAL;
     }
 
-    juego->mesas[indice_mesa].cantidad_lugares = CANTIDAD_LUGARES_MESA_GRUPAL;
-
-    return true;
+    return !posiciones_ocupadas;
 }
 
 /* PRE: El tope 'cantidad_mesas' de 'mesas' dentro de 'juego' debe estar correctamente inicializado.
@@ -681,19 +682,13 @@ void matar_cucarachas(coordenada_t posicion_linguini, objeto_t obstaculos[MAX_OB
         - 'posicion' debe estar dentro del rango del terreno de juego.
    POST: Devuelve el carácter correspondiente a la herramienta encontrada en la posición dada.*/
 char buscar_herramienta(objeto_t herramientas[MAX_HERRAMIENTAS], int tope_herramientas, coordenada_t posicion) {
+    char herramienta_encontrada = VACIO;
     for (int i = 0; i < tope_herramientas; i++) {
         if (son_posiciones_iguales(herramientas[i].posicion, posicion)) {
-            switch (herramientas[i].tipo) {
-                case MONEDA:
-                    return MONEDA;
-                case PATINES:
-                    return PATINES;
-                case MOPA:
-                    return MOPA;
-            }
+            herramienta_encontrada = herramientas[i].tipo;
         }
     }
-    return VACIO;
+    return herramienta_encontrada;
 }
 
 /* PRE: - 'posicion_linguini' debe estar dentro del rango del terreno de juego;
@@ -739,17 +734,13 @@ void recolectar_patines(coordenada_t posicion_linguini, int *cantidad_patines, o
         - 'posicion' debe estar dentro del rango del terreno de juego.
    POST: Devuelve el carácter correspondiente a el obstáculo encontrado en la posición dada.*/
 char buscar_obstaculo(objeto_t obstaculos[MAX_OBSTACULOS], int tope_obstaculos, coordenada_t posicion) {
+    char obstaculo_encontrado = VACIO;
     for (int i = 0; i < tope_obstaculos; i++) {
         if (son_posiciones_iguales(obstaculos[i].posicion, posicion)) {
-            switch (obstaculos[i].tipo) {
-                case CHARCO:
-                    return CHARCO;
-                case CUCARACHA:
-                    return CUCARACHA;
-            }
+            obstaculo_encontrado = obstaculos[i].tipo;
         }
     }
-    return VACIO;
+    return obstaculo_encontrado;
 }
 
 /* PRE: - 'posicion_linguini' debe estar dentro del rango del terreno de juego;
@@ -788,28 +779,30 @@ void resbalar_charcos(coordenada_t posicion_linguini, pedido_t bandeja[MAX_BANDE
         - 'posicion' debe estar dentro del rango del terreno de juego.
    POST: Devuelve el carácter correspondiente al contenido en la posición.*/
 char obtener_contenido_posicion(juego_t juego, coordenada_t posicion) {
+    char contenido = VACIO;
+
     if (hay_mesa(juego.mesas, juego.cantidad_mesas, posicion)) {
         for (int i = 0; i < juego.cantidad_mesas; i++) {
             for (int j = 0; j < juego.mesas[i].cantidad_lugares; j++) {
                 if (son_posiciones_iguales(juego.mesas[i].posicion[j], posicion)) {
-                    if (j < juego.mesas[i].cantidad_comensales) return MESA_OCUPADA;
-                    else return MESA;
+                    if (j < juego.mesas[i].cantidad_comensales) contenido = MESA_OCUPADA;
+                    else contenido = MESA;
                 }
             }
         }
     }
 
-    if (son_posiciones_iguales(juego.mozo.posicion, posicion)) return LINGUINI;
+    if (son_posiciones_iguales(juego.mozo.posicion, posicion)) contenido = LINGUINI;
 
-    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) return COCINA;
-    
+    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) contenido = COCINA;
+
     char herramienta = buscar_herramienta(juego.herramientas, juego.cantidad_herramientas, posicion);
-    if (herramienta != VACIO) return herramienta;
+    if (herramienta != VACIO) contenido = herramienta;
 
     char obstaculo = buscar_obstaculo(juego.obstaculos, juego.cantidad_obstaculos, posicion);
-    if (obstaculo != VACIO) return obstaculo;
+    if (obstaculo != VACIO) contenido = obstaculo;
 
-    return VACIO;
+    return contenido;
 }
 
 /* PRE: los topes dentro de 'juego' deben estar inicializados.
