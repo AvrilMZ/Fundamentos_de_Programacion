@@ -3,6 +3,7 @@
 #include <time.h>
 #include "restaurant.h"
 
+#define ITALICA "\e[3m"
 #define ROJO_NEGRITA "\e[1;31m"
 #define VERDE_NEGRITA "\e[1;32m"
 #define AMARILLO_NEGRITA "\e[1;33m"
@@ -11,6 +12,14 @@
 #define CELESTE_NEGRITA "\e[1;36m"
 #define BLANCO_NEGRITA "\e[1;37m"
 #define NORMAL "\e[0m"
+#define MOPA_EMOJI "\U0001F9F9"
+#define PATINES_EMOJI "\U000026F8"
+#define PEDIDOS_TOMADOS_EMOJI "\U0001F4CB"
+#define PEDIDOS_PREPARACION_EMOJI "\U0001F373"
+#define PEDIDOS_LISTOS_EMOJI "\U0001F37D"
+#define PEDIDOS_ENTREGAR_EMOJI "\U0001F4E6"
+#define MOVIMIENTOS_EMOJI "\U0001F6B6"
+#define DINERO_EMOJI "\U0001F4CB"
 
 #define ARRIBA 'W'
 #define ABAJO 'S'
@@ -996,6 +1005,9 @@ AZUL_NEGRITA, MOPA, NORMAL, AZUL_NEGRITA, COCINA, NORMAL, BLANCO_NEGRITA, CHARCO
 /* PRE: 'juego' debe estar correctamente inicializado.
    POST: Imprime por pantalla toda la información útil al momento de jugar.*/
 void informacion_util(juego_t juego) {
+    printf("\n=== Información del Juego ===\n\n");
+
+    printf("%s Mopa: ", MOPA_EMOJI);
     if (juego.mozo.tiene_mopa) {
         printf("Tenés la mopa.\n");
     } else if (!juego.mozo.tiene_mopa) {
@@ -1008,16 +1020,22 @@ void informacion_util(juego_t juego) {
         }
     }
 
+    printf("%s  Patines: ", PATINES_EMOJI);
     if (juego.mozo.cantidad_patines == 0) printf("No tenés patines.\n");
     else if (juego.mozo.cantidad_patines == 1) printf("Tenés %i par de patines.\n", juego.mozo.cantidad_patines);
     else printf("Tenés %i pares de patines.\n", juego.mozo.cantidad_patines);
 
-    printf("Pedidos tomados: %i\n", juego.mozo.cantidad_pedidos);
-    printf("Pedidos listos en cocina: %i\n", juego.cocina.cantidad_listos);
-    printf("Pedidos a entregar: %i\n", juego.mozo.cantidad_bandeja);
-    
-    printf("Realizó %i/%i movimientos.\n", juego.movimientos, MAX_MOVIMIENTOS);
-    printf("Objetivo de monedas %i/%i.\n", juego.dinero, OBJETIVO_DINERO);
+    printf("\n%s--- Estado de Pedidos ---%s\n", ITALICA, NORMAL);
+    printf("%s Pedidos tomados: %i\n", PEDIDOS_TOMADOS_EMOJI, juego.mozo.cantidad_pedidos);
+    printf("%s Pedidos en preparación: %i\n", PEDIDOS_PREPARACION_EMOJI, juego.cocina.cantidad_preparacion);
+    printf("%s  Pedidos listos en cocina: %i\n", PEDIDOS_LISTOS_EMOJI, juego.cocina.cantidad_listos);
+    printf("%s Pedidos a entregar: %i\n", PEDIDOS_ENTREGAR_EMOJI, juego.mozo.cantidad_bandeja);
+
+    printf("\n%s--- Movimientos y Objetivos ---%s\n", ITALICA, NORMAL);
+    printf("%s Movimientos realizados: %i/%i\n", MOVIMIENTOS_EMOJI, juego.movimientos, MAX_MOVIMIENTOS);
+    printf("%s Objetivo de monedas: %i/%i\n", DINERO_EMOJI, juego.dinero, OBJETIVO_DINERO);
+
+    printf("\n============================\n");
 }
 
 // POST: Inicializará el juego, cargando toda la información inicial de Linguini, las mesas, las herramientas y los obstáculos.
