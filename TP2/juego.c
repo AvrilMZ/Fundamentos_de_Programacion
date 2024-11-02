@@ -4,6 +4,11 @@
 #include <time.h>
 #include "restaurant.h"
 
+#define ROJO_NEGRITA "\e[1;31m"
+#define VERDE_NEGRITA "\e[1;32m"
+#define BLANCO_NEGRITA "\e[1;37m"
+#define NORMAL "\e[0m"
+
 const char ARRIBA = 'W';
 const char ABAJO = 'S';
 const char DERECHA = 'D';
@@ -32,23 +37,14 @@ void accion_usuario(char* accion) {
    POST: Si el estado del juego es 1 devuelve que ganó, si es -1 devuelve que perdió.*/
 void cierre_juego(int estado) {
     if (estado == 1) {
-        printf("\
-            ######      ###    ##    ##    ###     ######  ######## ######## \n \
-            ##    ##    ## ##   ###   ##   ## ##   ##    ##    ##    ##       \n \
-            ##         ##   ##  ####  ##  ##   ##  ##          ##    ##       \n \
-            ##   #### ##     ## ## ## ## ##     ##  ######     ##    ######   \n \
-            ##    ##  ######### ##  #### #########       ##    ##    ##       \n \
-            ##    ##  ##     ## ##   ### ##     ## ##    ##    ##    ##       \n \
-            ######   ##     ## ##    ## ##     ##  ######     ##    ######## \n");
+        printf("\n%s========================================%s\n", BLANCO_NEGRITA, NORMAL);
+        printf("        %s¡Felicidades, ganaste!%s        \n", VERDE_NEGRITA, NORMAL);
+        printf("%s========================================%s\n\n", BLANCO_NEGRITA, NORMAL);
     } else if (estado == -1) {
-        printf("\
-            ########  ######## ########  ########  ####  ######  ######## ######## \n \
-            ##     ## ##       ##     ## ##     ##  ##  ##    ##    ##    ##       \n \
-            ##     ## ##       ##     ## ##     ##  ##  ##          ##    ##       \n \
-            ########  ######   ########  ##     ##  ##   ######     ##    ######   \n \
-            ##        ##       ##   ##   ##     ##  ##        ##    ##    ##       \n \
-            ##        ##       ##    ##  ##     ##  ##  ##    ##    ##    ##       \n \
-            ##        ######## ##     ## ########  ####  ######     ##    ######## \n");
+        printf("\n%s========================================%s\n", BLANCO_NEGRITA, NORMAL);
+        printf("              %s¡Perdiste!%s                  \n", ROJO_NEGRITA, NORMAL);
+        printf("          %s¡Inténtalo de nuevo!%s            \n", ROJO_NEGRITA, NORMAL);
+        printf("%s========================================%s\n\n", BLANCO_NEGRITA, NORMAL);
     }
 }
 
