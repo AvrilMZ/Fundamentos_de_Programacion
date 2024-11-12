@@ -362,32 +362,28 @@ void asignar_paciencia(mesa_t mesas[MAX_MESAS], int tope_mesas) {
    POST: Decrementa una unidad de paciencia a cada mesa, únicamente si tiene, y si llega a cero, 'cantidad_comensales' pasa a ser cero y se eliminan los pedidos relacionados.*/
 void perdida_paciencia(mesa_t mesas[MAX_MESAS], int tope_mesas, cocina_t *cocina, mozo_t *mozo) {
     for (int i = 0; i < tope_mesas; i++) {
-        if (mesas[i].paciencia > 0) {
+        if (mesas[i].cantidad_comensales > 0) {
             mesas[i].paciencia--;
-        } else {
-            mesas[i].cantidad_comensales = 0;
-            for (int j = 0; j < cocina->cantidad_preparacion; j++) {
-                if (cocina->platos_preparacion[j].id_mesa == i) {
-                    eliminar_pedido(cocina->platos_preparacion, &cocina->cantidad_preparacion, j);
-                    j--;
+            if (mesas[i].paciencia <= 0) {
+                mesas[i].cantidad_comensales = 0;
+                mesas[i].pedido_tomado = false;
+                for (int j = 0; j < mozo->cantidad_pedidos; j++) {
+                    if (mozo->pedidos[j].id_mesa == mesas[i].posicion[0].fil * MAX_COLUMNAS + mesas[i].posicion[0].col) {
+                        eliminar_pedido(mozo->pedidos, &mozo->cantidad_pedidos, j);
+                        j--;
+                    }
                 }
-            }
-            for (int j = 0; j < cocina->cantidad_listos; j++) {
-                if (cocina->platos_listos[j].id_mesa == i) {
-                    eliminar_pedido(cocina->platos_listos, &cocina->cantidad_listos, j);
-                    j--;
+                for (int j = 0; j < cocina->cantidad_preparacion; j++) {
+                    if (cocina->platos_preparacion[j].id_mesa == mesas[i].posicion[0].fil * MAX_COLUMNAS + mesas[i].posicion[0].col) {
+                        eliminar_pedido(cocina->platos_preparacion, &cocina->cantidad_preparacion, j);
+                        j--;
+                    }
                 }
-            }
-            for (int j = 0; j < mozo->cantidad_pedidos; j++) {
-                if (mozo->pedidos[j].id_mesa == i) {
-                    eliminar_pedido(mozo->pedidos, &mozo->cantidad_pedidos, j);
-                    j--;
-                }
-            }
-            for (int j = 0; j < mozo->cantidad_bandeja; j++) {
-                if (mozo->bandeja[j].id_mesa == i) {
-                    eliminar_pedido(mozo->bandeja, &mozo->cantidad_bandeja, j);
-                    j--;
+                for (int j = 0; j < cocina->cantidad_listos; j++) {
+                    if (cocina->platos_listos[j].id_mesa == mesas[i].posicion[0].fil * MAX_COLUMNAS + mesas[i].posicion[0].col) {
+                        eliminar_pedido(cocina->platos_listos, &cocina->cantidad_listos, j);
+                        j--;
+                    }
                 }
             }
         }
@@ -408,24 +404,6 @@ void inicializar_linguini(juego_t *juego) {
         intentos++;
         if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return;
     } while (!es_posicion_vacia(*juego, juego->mozo.posicion));
-}
-
-/* PRE: - 'posicion_linguini' debe estar inicializada y ser una coordenada válida.
-        - 'mesas' no debe estar vacio;
-        - 'tope_mesas' debe ser mayor estricto a cero y menor o igual a 'MAX_MESAS'.
-   POST: Devuelve el inidice de mesa del vector 'mesas' cuya distancia, desde cualquier posición, con Linguini sea 'DISTANCIA_MESA_MOZO' y no este vacia. Si no encuentra ninguna devuelve -1.*/
-int mesa_posible_tomar_pedido(coordenada_t posicion_linguini, mesa_t mesas[MAX_MESAS], int tope_mesas) {
-    int mesa_posible_tomar_pedido = -1;
-    for (int i = 0; i < tope_mesas; i++) {
-        if (mesas[i].cantidad_comensales > 0 && mesas[i].pedido_tomado == false) {
-            for (int j = 0; j < mesas[i].cantidad_lugares; j++) {
-                if (distancia_manhattan(posicion_linguini, mesas[i].posicion[j]) == DISTANCIA_MESA_MOZO) {
-                    mesa_posible_tomar_pedido = i;
-                }
-            }
-        }
-    }
-    return mesa_posible_tomar_pedido;
 }
 
 /* PRE: 'cantidad_pedidos' debe estar inicializado.
@@ -463,21 +441,21 @@ int mayor_tiempo_preparacion(char platos[MAX_PEDIDOS], int cantidad_platos) {
 void tomar_pedido(coordenada_t posicion_linguini, pedido_t pedidos[MAX_PEDIDOS], int *cantidad_pedidos, mesa_t mesas[MAX_MESAS], int tope_mesas, bool tiene_mopa) {
     if (tiene_mopa) return;
 
-    int id_mesa_pedido = mesa_posible_tomar_pedido(posicion_linguini, mesas, tope_mesas);
-    if (id_mesa_pedido != -1) {
-        if (*cantidad_pedidos + 1 > MAX_PEDIDOS) return;
-
-        pedidos[*cantidad_pedidos].id_mesa = id_mesa_pedido;
-        pedidos[*cantidad_pedidos].cantidad_platos = 0;
-
-        for (int i = 0; i < mesas[id_mesa_pedido].cantidad_comensales; i++) {
-            pedidos[*cantidad_pedidos].platos[i] = pedido_aleatorio();
-            pedidos[*cantidad_pedidos].cantidad_platos++;
+    for (int i = 0; i < tope_mesas; i++) {
+        for (int j = 0; j < mesas[i].cantidad_lugares; j++) {
+            if (distancia_manhattan(posicion_linguini, mesas[i].posicion[j]) == DISTANCIA_MESA_MOZO && mesas[i].cantidad_comensales > 0 && !mesas[i].pedido_tomado) {
+                if (*cantidad_pedidos < MAX_PEDIDOS) {
+                    pedidos[*cantidad_pedidos].id_mesa = i;
+                    pedidos[*cantidad_pedidos].cantidad_platos = mesas[i].cantidad_comensales;
+                    for (int k = 0; k < mesas[i].cantidad_comensales; k++) {
+                        pedidos[*cantidad_pedidos].platos[k] = pedido_aleatorio();
+                    }
+                    pedidos[*cantidad_pedidos].tiempo_preparacion = mayor_tiempo_preparacion(pedidos[*cantidad_pedidos].platos, pedidos[*cantidad_pedidos].cantidad_platos);
+                    (*cantidad_pedidos)++;
+                    mesas[i].pedido_tomado = true;
+                }
+            }
         }
-
-        mesas[id_mesa_pedido].pedido_tomado = true;
-        pedidos[*cantidad_pedidos].tiempo_preparacion = mayor_tiempo_preparacion(pedidos[*cantidad_pedidos].platos, pedidos[*cantidad_pedidos].cantidad_platos);
-        (*cantidad_pedidos)++;
     }
 }
 
@@ -511,6 +489,9 @@ void entregar_pedido(coordenada_t posicion_linguini, pedido_t bandeja[MAX_PEDIDO
 
 // POST: Inicializa a la cocina en una posicion aleatoria, si esta ya está ocupada le asigna nuevamente otra aleatoria.
 void inicializar_cocina(juego_t *juego) {
+    juego->cocina.cantidad_preparacion = 0;
+    juego->cocina.cantidad_listos = 0;
+    
     int intentos = 0;
     do {
         juego->cocina.posicion = posicion_aleatoria();
@@ -524,7 +505,6 @@ void platos_en_preparacion(pedido_t **platos_preparacion, int *cantidad_preparac
     *platos_preparacion = malloc(sizeof(pedido_t) * MAX_PLATOS);
     if (*platos_preparacion == NULL) {
         printf("%s\n", ERROR_RESERVAR_MEMORIA);
-        free(*platos_preparacion);
         return;
     }
     *cantidad_preparacion = 0;
@@ -535,7 +515,6 @@ void platos_listos(pedido_t **platos_listos, int *cantidad_listos) {
     *platos_listos = malloc(sizeof(pedido_t) * MAX_PLATOS);
     if (*platos_listos == NULL) {
         printf("%s\n", ERROR_RESERVAR_MEMORIA);
-        free(*platos_listos);
         return;
     }
     *cantidad_listos = 0;
@@ -759,8 +738,10 @@ char buscar_obstaculo(objeto_t obstaculos[MAX_OBSTACULOS], int tope_obstaculos, 
         - 'tope_obstaculos' debe ser mayor estricto a cero y menor o igual a 'MAX_OBSTACULOS'.
    POST: Si Linguini tiene la mopa y pasa sobre un charco este se elimina de la posición.*/
 void limpiar_charcos(coordenada_t posicion_linguini, bool tiene_mopa, objeto_t obstaculos[MAX_OBSTACULOS], int *tope_obstaculos) {
+    if (!tiene_mopa) return;
+    
     for (int i = 0; i < *tope_obstaculos; i++) {
-        if (obstaculos[i].tipo == CHARCO && son_posiciones_iguales(posicion_linguini, obstaculos[i].posicion) && tiene_mopa) {
+        if (obstaculos[i].tipo == CHARCO && son_posiciones_iguales(posicion_linguini, obstaculos[i].posicion)) {
             obstaculos[i] = obstaculos[*tope_obstaculos - 1];
             (*tope_obstaculos)--;
             i--;
@@ -881,14 +862,9 @@ void utilizar_mopa(juego_t *juego) {
         }
     } else {
         for (int i = 0; i < juego->cantidad_herramientas; i++) {
-            if (juego->herramientas[i].tipo == MOPA) {
-                coordenada_t posicion_mopa = juego->herramientas[i].posicion;
-                if (son_posiciones_iguales(juego->mozo.posicion, posicion_mopa)) {
-                    if (!juego->mozo.tiene_mopa) {
-                        juego->mozo.tiene_mopa = true;
-                        eliminar_objeto(juego->herramientas, &juego->cantidad_herramientas, i);
-                    }
-                }
+            if (juego->herramientas[i].tipo == MOPA && son_posiciones_iguales(juego->mozo.posicion, juego->herramientas[i].posicion)) {
+                juego->mozo.tiene_mopa = true;
+                eliminar_objeto(juego->herramientas, &juego->cantidad_herramientas, i);
             }
         }
     }
@@ -1045,6 +1021,11 @@ void inicializar_juego(juego_t *juego) {
     juego->cantidad_obstaculos = 0;
     juego->movimientos = 0;
     juego->dinero = 0;
+
+    juego->mozo.posicion.fil = -1;
+    juego->mozo.posicion.col = -1;
+    juego->cocina.posicion.fil = -1;
+    juego->cocina.posicion.col = -1;
 
     inicializar_mesa(juego);
     inicializar_cocina(juego);
