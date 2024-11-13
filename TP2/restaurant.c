@@ -502,23 +502,44 @@ void inicializar_cocina(juego_t *juego) {
 
 // POST: Reserva memoria dinamica para el vector 'platos_preparacion' de cocina e inicializa 'cantidad_preparacion'.
 void platos_en_preparacion(pedido_t **platos_preparacion, int *cantidad_preparacion) {
-    *platos_preparacion = malloc(sizeof(pedido_t) * MAX_PLATOS);
-    if (*platos_preparacion == NULL) {
+    *platos_preparacion = NULL;
+    *cantidad_preparacion = 0;
+}
+
+/* PRE: 'cantidad_preparacion' debe estar inicializado.
+   POST: Agrega un plato a la lista de platos en preparación reservando la cantidad de memoria dinamica correspondiente.*/
+void agregar_plato_preparacion(pedido_t **platos_preparacion, int *cantidad_preparacion, pedido_t nuevo_plato) {
+    size_t nueva_cantidad = (size_t)(*cantidad_preparacion + 1);
+    pedido_t *pedido_a_dejar = (pedido_t *)realloc(*platos_preparacion, nueva_cantidad * sizeof(pedido_t));
+    if (pedido_a_dejar == NULL) {
         printf("%s\n", ERROR_RESERVAR_MEMORIA);
         return;
     }
-    *cantidad_preparacion = 0;
+    
+    *platos_preparacion = pedido_a_dejar;
+    (*platos_preparacion)[*cantidad_preparacion] = nuevo_plato;
+    (*cantidad_preparacion)++;
 }
 
 // POST: Reserva memoria dinamica para el vector 'platos_listos' de cocina e inicializa 'cantidad_listos'.
 void platos_listos(pedido_t **platos_listos, int *cantidad_listos) {
-    *platos_listos = malloc(sizeof(pedido_t) * MAX_PLATOS);
-    if (*platos_listos == NULL) {
+    *platos_listos = NULL;
+    *cantidad_listos = 0;
+}
+
+/* PRE: 'cantidad_listos' debe estar inicializado.
+   POST: Agrega un plato a la lista de platos listos reservando la cantidad de memoria dinamica correspondiente.*/
+void agregar_plato_listo(pedido_t **platos_listos, int *cantidad_listos, pedido_t nuevo_plato) {
+    size_t nueva_cantidad = (size_t)(*cantidad_listos + 1);
+    pedido_t *pedido_a_recolectar = (pedido_t *)realloc(*platos_listos, nueva_cantidad * sizeof(pedido_t));
+    if (pedido_a_recolectar == NULL) {
         printf("%s\n", ERROR_RESERVAR_MEMORIA);
         return;
     }
-    *cantidad_listos = 0;
-
+    
+    *platos_listos = pedido_a_recolectar;
+    (*platos_listos)[*cantidad_listos] = nuevo_plato;
+    (*cantidad_listos)++;
 }
 
 /* PRE: - 'posicion' en 'mozo' debe ser valida;
@@ -528,12 +549,12 @@ void platos_listos(pedido_t **platos_listos, int *cantidad_listos) {
             - 'mozo' le pasa los elementos de su vector 'pedidos' a 'cocina' en 'platos_preparacion', asignando el 'tiempo_preparacion';
             - 'cocina' le pasa los elementos de su vector 'platos_listos' a 'mozo' en 'bandeja'.*/
 void interaccion_linguini_cocina(mozo_t *mozo, cocina_t *cocina) {
+    if (mozo->tiene_mopa) return;
     if (!son_posiciones_iguales(mozo->posicion, cocina->posicion)) return;
 
     if (mozo->cantidad_pedidos > 0) {
         for (int i = 0; i < mozo->cantidad_pedidos; i++) {
-            cocina->platos_preparacion[cocina->cantidad_preparacion] = mozo->pedidos[i];
-            cocina->cantidad_preparacion++;
+            agregar_plato_preparacion(&cocina->platos_preparacion, &cocina->cantidad_preparacion, mozo->pedidos[i]);
             eliminar_pedido(mozo->pedidos, &mozo->cantidad_pedidos, i);
             i--;
         }
@@ -543,13 +564,12 @@ void interaccion_linguini_cocina(mozo_t *mozo, cocina_t *cocina) {
         }
     }
 
-    if (cocina->cantidad_listos > 0 && mozo->cantidad_bandeja < MAX_BANDEJA - 1) {
-        for (int i = 0; i < cocina->cantidad_listos; i++) {
-            mozo->bandeja[mozo->cantidad_bandeja] = cocina->platos_listos[i];
-            mozo->cantidad_bandeja++;
-            eliminar_pedido(cocina->platos_listos, &cocina->cantidad_listos, i);
-            i--;
-        }
+    int espacio_libre = MAX_BANDEJA - mozo->cantidad_bandeja;
+    while (espacio_libre > 0 && cocina->cantidad_listos > 0) {
+        mozo->bandeja[mozo->cantidad_bandeja] = cocina->platos_listos[0];
+        mozo->cantidad_bandeja++;
+        espacio_libre--;
+        eliminar_pedido(cocina->platos_listos, &cocina->cantidad_listos, 0);
     }
 }
 
@@ -561,8 +581,7 @@ void preparacion_platos(cocina_t *cocina) {
             cocina->platos_preparacion[i].tiempo_preparacion--;
         }
         if (cocina->platos_preparacion[i].tiempo_preparacion == 0) {
-            cocina->platos_listos[cocina->cantidad_listos] = cocina->platos_preparacion[i];
-            cocina->cantidad_listos++;
+            agregar_plato_listo(&cocina->platos_listos, &cocina->cantidad_listos, cocina->platos_preparacion[i]);
             eliminar_pedido(cocina->platos_preparacion, &cocina->cantidad_preparacion, i);
             i--;
         }
@@ -876,7 +895,8 @@ void utilizar_mopa(juego_t *juego) {
         - 'patines_puestos' debe ser 'true'.
    POST: Mueve al mozo a traves de toda la fila o columna, o hasta que se encuentre con una mesa, interactuando con todos los elementos en su camino.*/
 void utilizar_patines(juego_t *juego, char accion) {
-    if (accion != ARRIBA && accion != ABAJO && accion != DERECHA && accion != IZQUIERDA) return;
+    if (juego->mozo.tiene_mopa) return;
+    if (accion != ARRIBA && accion != ABAJO && accion != DERECHA && accion != IZQUIERDA && accion != MOPA) return;
 
     coordenada_t nueva_posicion = juego->mozo.posicion;
     bool continuar = true;
@@ -895,6 +915,9 @@ void utilizar_patines(juego_t *juego, char accion) {
                 break;
             case IZQUIERDA:
                 siguiente_posicion.col--;
+                break;
+            case MOPA:
+                utilizar_mopa(juego);
                 break;
         }
 
@@ -940,7 +963,7 @@ void realizar_movimiento(juego_t *juego, char accion) {
             if (nueva_posicion.col > 0) nueva_posicion.col--;
             break;
         case MOPA:
-            utilizar_mopa(juego);
+            utilizar_mopa(juego);  
             break;
         case TOMAR_PEDIDO:
             tomar_pedido(juego->mozo.posicion, juego->mozo.pedidos, &juego->mozo.cantidad_pedidos, juego->mesas, juego->cantidad_mesas, juego->mozo.tiene_mopa);
@@ -1089,8 +1112,8 @@ void mostrar_juego(juego_t juego) {
    POST: Libera la memoria dinámica reservada para el juego.*/
 void destruir_juego(juego_t *juego) {
     free(juego->cocina.platos_preparacion);
-    free(juego->cocina.platos_listos);
-
     juego->cocina.platos_preparacion = NULL;
+
+    free(juego->cocina.platos_listos);
     juego->cocina.platos_listos = NULL;
 }
