@@ -60,8 +60,8 @@ int main() {
 
         char accion = ' ';
         accion_usuario(&accion);
-
         realizar_jugada(&juego, accion);
+        
         estado = estado_juego(juego);
     }
 
