@@ -897,7 +897,7 @@ void utilizar_mopa(juego_t *juego) {
         - 'patines_puestos' debe ser 'true'.
    POST: Mueve al mozo a traves de toda la fila o columna, o hasta que se encuentre con una mesa, interactuando con todos los elementos en su camino.*/
 void utilizar_patines(juego_t *juego, char accion) {
-    if (accion != ARRIBA && accion != ABAJO && accion != DERECHA && accion != IZQUIERDA && accion != MOPA) return;
+    if (accion != ARRIBA && accion != ABAJO && accion != DERECHA && accion != IZQUIERDA) return;
 
     coordenada_t nueva_posicion = juego->mozo.posicion;
     bool continuar = true;
@@ -916,9 +916,6 @@ void utilizar_patines(juego_t *juego, char accion) {
                 break;
             case IZQUIERDA:
                 siguiente_posicion.col--;
-                break;
-            case MOPA:
-                utilizar_mopa(juego);
                 break;
         }
 
@@ -972,9 +969,6 @@ void realizar_movimiento(juego_t *juego, char accion) {
         case USAR_PATINES:
             if (juego->mozo.cantidad_patines > 0 && !juego->mozo.tiene_mopa) {
                 juego->mozo.patines_puestos = true;
-                char siguiente_accion = ' ';
-                scanf(" %c", &siguiente_accion);
-                utilizar_patines(juego, siguiente_accion);
             }
             return;
     }
@@ -1068,24 +1062,26 @@ void inicializar_juego(juego_t *juego) {
         - 'acción' debe ser válida.
    POST: Realizará la acción recibida por parámetro.*/
 void realizar_jugada(juego_t *juego, char accion) {
-    realizar_movimiento(juego, accion);
+    if (juego->mozo.patines_puestos) {
+        if (accion == MOPA) utilizar_mopa(juego);
+        utilizar_patines(juego, accion);
+    } else {
+        realizar_movimiento(juego, accion);
+        entregar_pedido(juego->mozo.posicion, juego->mozo.bandeja, &juego->mozo.cantidad_bandeja, juego->mesas, juego->cantidad_mesas, juego->mozo.tiene_mopa, &juego->dinero);
+        interaccion_linguini_cocina(&juego->mozo, &juego->cocina);
+        matar_cucarachas(juego->mozo.posicion, juego->obstaculos, &juego->cantidad_obstaculos, juego->mozo.tiene_mopa);
+        recolectar_monedas(juego->mozo.posicion, juego->herramientas, &juego->cantidad_herramientas, &juego->dinero, juego->mozo.tiene_mopa);
+        recolectar_patines(juego->mozo.posicion, &juego->mozo.cantidad_patines, juego->herramientas, &juego->cantidad_herramientas, juego->mozo.tiene_mopa);
+        limpiar_charcos(juego->mozo.posicion, juego->mozo.tiene_mopa, juego->obstaculos, &juego->cantidad_obstaculos);
+        resbalar_charcos(juego->mozo.posicion, juego->mozo.bandeja, &juego->mozo.cantidad_bandeja, juego->obstaculos, juego->cantidad_obstaculos, juego->mesas, juego->cantidad_mesas);
+    }
 
     distribuir_comensales(juego->mesas, juego->cantidad_mesas, juego->movimientos);
     asignar_paciencia(juego->mesas, juego->cantidad_mesas);
     perdida_paciencia(juego->mesas, juego->cantidad_mesas, &juego->cocina, &juego->mozo);
-    entregar_pedido(juego->mozo.posicion, juego->mozo.bandeja, &juego->mozo.cantidad_bandeja, juego->mesas, juego->cantidad_mesas, juego->mozo.tiene_mopa, &juego->dinero);
-
     preparacion_platos(&juego->cocina);
-    interaccion_linguini_cocina(&juego->mozo, &juego->cocina);
-
     inicializar_cucaracha(juego);
-    matar_cucarachas(juego->mozo.posicion, juego->obstaculos, &juego->cantidad_obstaculos, juego->mozo.tiene_mopa);
     perdida_paciencia_cucarachas(juego->obstaculos, juego->cantidad_obstaculos,juego->mesas, juego->cantidad_mesas);
-    
-    recolectar_monedas(juego->mozo.posicion, juego->herramientas, &juego->cantidad_herramientas, &juego->dinero, juego->mozo.tiene_mopa);
-    recolectar_patines(juego->mozo.posicion, &juego->mozo.cantidad_patines, juego->herramientas, &juego->cantidad_herramientas, juego->mozo.tiene_mopa);
-    limpiar_charcos(juego->mozo.posicion, juego->mozo.tiene_mopa, juego->obstaculos, &juego->cantidad_obstaculos);
-    resbalar_charcos(juego->mozo.posicion, juego->mozo.bandeja, &juego->mozo.cantidad_bandeja, juego->obstaculos, juego->cantidad_obstaculos, juego->mesas, juego->cantidad_mesas);
 }
 
 /* PRE: El juego deberá estar inicializado previamente con `inicializar_juego`
