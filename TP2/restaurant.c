@@ -129,6 +129,7 @@ void eliminar_objeto(objeto_t vector[], int *tope, int indice_a_eliminar) {
     for (int i = indice_a_eliminar; i < *tope - 1; i++) {
         vector[i] = vector[i + 1];
     }
+    vector[*tope - 1].tipo = '\0';
     (*tope)--;
 }
 
@@ -140,6 +141,11 @@ void eliminar_pedido(pedido_t vector[], int *tope, int indice_a_eliminar) {
     for (int i = indice_a_eliminar; i < *tope - 1; i++) {
         vector[i] = vector[i + 1];
     }
+
+    vector[*tope - 1].id_mesa = -1;
+    vector[*tope - 1].cantidad_platos = 0;
+    vector[*tope - 1].tiempo_preparacion = 0;
+    vector[*tope - 1].platos[0] = '\0';
     (*tope)--;
 }
 
@@ -437,7 +443,7 @@ int mayor_tiempo_preparacion(char platos[MAX_PEDIDOS], int cantidad_platos) {
         - 'cantidad_pedidos' debe estar inicializado;
         - 'mesas' no debe estar vacio;
         - 'tope_mesas' debe ser mayor estricto a cero y menor o igual a 'MAX_MESAS'.
-   POST: Toma el pedido de todos los comesales de una mesa guardandolo en el vector 'pedidos', si Linguini no tiene la mopa.*/
+   POST: Toma el pedido de todos los comesales de una mesa, asignando el tiempo de preparación, guardandolo en el vector 'pedidos', si Linguini no tiene la mopa.*/
 void tomar_pedido(coordenada_t posicion_linguini, pedido_t pedidos[MAX_PEDIDOS], int *cantidad_pedidos, mesa_t mesas[MAX_MESAS], int tope_mesas, bool tiene_mopa) {
     if (tiene_mopa) return;
 
@@ -546,7 +552,7 @@ void agregar_plato_listo(pedido_t **platos_listos, int *cantidad_listos, pedido_
         - 'cantidad_pedidos' y 'cantiadad_bandeja' en 'mozo' deben estar inicializados;
         - 'cantidad_preparacion' y 'cantidad_listos' en 'cocina' deben estar inicializados.
    POST: Si la posición de 'mozo' es igual a la de 'cocina': 
-            - 'mozo' le pasa los elementos de su vector 'pedidos' a 'cocina' en 'platos_preparacion', asignando el 'tiempo_preparacion';
+            - 'mozo' le pasa los elementos de su vector 'pedidos' a 'cocina' en 'platos_preparacion';
             - 'cocina' le pasa los elementos de su vector 'platos_listos' a 'mozo' en 'bandeja'.*/
 void interaccion_linguini_cocina(mozo_t *mozo, cocina_t *cocina) {
     if (mozo->tiene_mopa) return;
@@ -557,10 +563,6 @@ void interaccion_linguini_cocina(mozo_t *mozo, cocina_t *cocina) {
             agregar_plato_preparacion(&cocina->platos_preparacion, &cocina->cantidad_preparacion, mozo->pedidos[i]);
             eliminar_pedido(mozo->pedidos, &mozo->cantidad_pedidos, i);
             i--;
-        }
-
-        for (int i = 0; i < cocina->cantidad_preparacion; i++) {
-            cocina->platos_preparacion[i].tiempo_preparacion = mayor_tiempo_preparacion(cocina->platos_preparacion[i].platos, cocina->platos_preparacion[i].cantidad_platos);
         }
     }
 
@@ -895,7 +897,6 @@ void utilizar_mopa(juego_t *juego) {
         - 'patines_puestos' debe ser 'true'.
    POST: Mueve al mozo a traves de toda la fila o columna, o hasta que se encuentre con una mesa, interactuando con todos los elementos en su camino.*/
 void utilizar_patines(juego_t *juego, char accion) {
-    if (juego->mozo.tiene_mopa) return;
     if (accion != ARRIBA && accion != ABAJO && accion != DERECHA && accion != IZQUIERDA && accion != MOPA) return;
 
     coordenada_t nueva_posicion = juego->mozo.posicion;
@@ -969,7 +970,7 @@ void realizar_movimiento(juego_t *juego, char accion) {
             tomar_pedido(juego->mozo.posicion, juego->mozo.pedidos, &juego->mozo.cantidad_pedidos, juego->mesas, juego->cantidad_mesas, juego->mozo.tiene_mopa);
             break;
         case USAR_PATINES:
-            if (juego->mozo.cantidad_patines > 0) {
+            if (juego->mozo.cantidad_patines > 0 && !juego->mozo.tiene_mopa) {
                 juego->mozo.patines_puestos = true;
                 char siguiente_accion = ' ';
                 scanf(" %c", &siguiente_accion);
