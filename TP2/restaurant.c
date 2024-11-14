@@ -935,6 +935,7 @@ void utilizar_patines(juego_t *juego, char accion) {
         }
     }
 
+    juego->movimientos++;
     juego->mozo.patines_puestos = false;
     juego->mozo.cantidad_patines--;
 }
