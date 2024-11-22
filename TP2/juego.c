@@ -16,6 +16,9 @@ const char IZQUIERDA = 'A';
 const char MOPA = 'O';
 const char TOMAR_PEDIDO = 'T';
 const char USAR_PATINES = 'P';
+const int ESTADO_GANAR = 1;
+const int SEGUIR_JUGANDO = 0;
+const int ESTADO_PERDER = -1;
 
 // POST: Devuelve 'true' si es un carácter de acción válida, de lo contrario devuelve 'false'.
 bool es_accion_valida(char accion) {
@@ -36,11 +39,11 @@ void accion_usuario(char* accion) {
 /* PRE: El valor pasado en 'estado' debe ser 1 ó -1.
    POST: Si el estado del juego es 1 devuelve que ganó, si es -1 devuelve que perdió.*/
 void cierre_juego(int estado) {
-    if (estado == 1) {
+    if (estado == ESTADO_GANAR) {
         printf("\n%s========================================%s\n", BLANCO_NEGRITA, NORMAL);
         printf("        %s¡Felicidades, ganaste!%s        \n", VERDE_NEGRITA, NORMAL);
         printf("%s========================================%s\n\n", BLANCO_NEGRITA, NORMAL);
-    } else if (estado == -1) {
+    } else if (estado == ESTADO_PERDER) {
         printf("\n%s========================================%s\n", BLANCO_NEGRITA, NORMAL);
         printf("              %s¡Perdiste!%s                  \n", ROJO_NEGRITA, NORMAL);
         printf("          %s¡Inténtalo de nuevo!%s            \n", ROJO_NEGRITA, NORMAL);
@@ -55,7 +58,7 @@ int main() {
     inicializar_juego(&juego);
 
     int estado = 0;
-    while (estado == 0) {
+    while (estado == SEGUIR_JUGANDO) {
         mostrar_juego(juego);
 
         char accion = ' ';
