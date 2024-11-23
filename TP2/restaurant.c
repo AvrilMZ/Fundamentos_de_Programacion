@@ -167,44 +167,46 @@ bool hay_mesa(mesa_t mesas[MAX_MESAS], int tope_mesas, coordenada_t posicion) {
         - 'posicion' debe estar dentro del rango del terreno de juego.
    POST: Devuelve true si la posicion no fue previamente asignada, de lo contrario devuelve false.*/
 bool es_posicion_vacia(juego_t juego, coordenada_t posicion) {
-    bool posicion_ocupada = false;
+    if (hay_mesa(juego.mesas, juego.cantidad_mesas, posicion)) return false;
 
-    if (hay_mesa(juego.mesas, juego.cantidad_mesas, posicion)) posicion_ocupada = true;
+    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) return false;
 
-    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) posicion_ocupada = true;
+    if (son_posiciones_iguales(juego.mozo.posicion, posicion)) return false;
 
-    if (son_posiciones_iguales(juego.mozo.posicion, posicion)) posicion_ocupada = true;
-
+    bool es_vacia = true;
     for (int i = 0; i < juego.cantidad_herramientas; i++) {
-        if (son_posiciones_iguales(juego.herramientas[i].posicion, posicion)) posicion_ocupada = true;
+        if (son_posiciones_iguales(juego.herramientas[i].posicion, posicion)) es_vacia = false;
     }
 
-    for (int i = 0; i < juego.cantidad_obstaculos; i++) {
-        if (son_posiciones_iguales(juego.obstaculos[i].posicion, posicion)) posicion_ocupada = true;
+    if (es_vacia) {
+        for (int i = 0; i < juego.cantidad_obstaculos; i++) {
+            if (son_posiciones_iguales(juego.obstaculos[i].posicion, posicion)) es_vacia = false;
+        }
     }
 
-    return !posicion_ocupada;
+    return es_vacia;
 }
 
 /* PRE: - Los topes dentro de 'juego' de 'mesas', 'herramientas' y 'obstaculos' deben estar correctamente inicializados;
         - 'posicion' debe estar dentro del rango del terreno de juego.
    POST: Devuelve true si la posicion no fue previamente asignada (excluyendo a Linguini), de lo contrario devuelve false.*/
 bool es_posicion_vacia_excepto_linguini(juego_t juego, coordenada_t posicion) {
-    bool posicion_ocupada = false;
+    if (hay_mesa(juego.mesas, juego.cantidad_mesas, posicion)) return false;
 
-    if (hay_mesa(juego.mesas, juego.cantidad_mesas, posicion)) posicion_ocupada = true;
+    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) return false;
 
-    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) posicion_ocupada = true;
-
+    bool es_vacia = true;
     for (int i = 0; i < juego.cantidad_herramientas; i++) {
-        if (son_posiciones_iguales(juego.herramientas[i].posicion, posicion)) posicion_ocupada = true;
+        if (son_posiciones_iguales(juego.herramientas[i].posicion, posicion)) es_vacia = false;
     }
 
-    for (int i = 0; i < juego.cantidad_obstaculos; i++) {
-        if (son_posiciones_iguales(juego.obstaculos[i].posicion, posicion)) posicion_ocupada = true;
+    if (es_vacia) {
+        for (int i = 0; i < juego.cantidad_obstaculos; i++) {
+            if (son_posiciones_iguales(juego.obstaculos[i].posicion, posicion)) es_vacia = false;
+        }
     }
 
-    return !posicion_ocupada;
+    return es_vacia;
 }
 
 /* PRE: - 'mesas' no debe estar vacio;
@@ -792,8 +794,17 @@ void resbalar_charcos(coordenada_t posicion_linguini, pedido_t bandeja[MAX_BANDE
         - 'posicion' debe estar dentro del rango del terreno de juego.
    POST: Devuelve el carácter correspondiente al contenido en la posición.*/
 char obtener_contenido_posicion(juego_t juego, coordenada_t posicion) {
-    char contenido = VACIO;
+    if (son_posiciones_iguales(juego.mozo.posicion, posicion)) return LINGUINI;
 
+    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) return COCINA;
+
+    char herramienta = buscar_herramienta(juego.herramientas, juego.cantidad_herramientas, posicion);
+    if (herramienta != VACIO) return herramienta;
+
+    char obstaculo = buscar_obstaculo(juego.obstaculos, juego.cantidad_obstaculos, posicion);
+    if (obstaculo != VACIO) return obstaculo;
+
+    char contenido = VACIO;
     if (hay_mesa(juego.mesas, juego.cantidad_mesas, posicion)) {
         for (int i = 0; i < juego.cantidad_mesas; i++) {
             for (int j = 0; j < juego.mesas[i].cantidad_lugares; j++) {
@@ -804,16 +815,6 @@ char obtener_contenido_posicion(juego_t juego, coordenada_t posicion) {
             }
         }
     }
-
-    char herramienta = buscar_herramienta(juego.herramientas, juego.cantidad_herramientas, posicion);
-    if (herramienta != VACIO) contenido = herramienta;
-
-    char obstaculo = buscar_obstaculo(juego.obstaculos, juego.cantidad_obstaculos, posicion);
-    if (obstaculo != VACIO) contenido = obstaculo;
-
-    if (son_posiciones_iguales(juego.cocina.posicion, posicion)) contenido = COCINA;
-
-    if (son_posiciones_iguales(juego.mozo.posicion, posicion)) contenido = LINGUINI;
 
     return contenido;
 }
