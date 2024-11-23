@@ -926,13 +926,13 @@ void utilizar_patines(juego_t *juego, char accion) {
             nueva_posicion = siguiente_posicion;
             juego->mozo.posicion = nueva_posicion;
 
+            limpiar_charcos(juego->mozo.posicion, juego->mozo.tiene_mopa, juego->obstaculos, &juego->cantidad_obstaculos);
+            resbalar_charcos(juego->mozo.posicion, juego->mozo.bandeja, &juego->mozo.cantidad_bandeja, juego->obstaculos, juego->cantidad_obstaculos, juego->mesas, juego->cantidad_mesas);
+            interaccion_linguini_cocina(&juego->mozo, &juego->cocina);
+            entregar_pedido(juego->mozo.posicion, juego->mozo.bandeja, &juego->mozo.cantidad_bandeja, juego->mesas, juego->cantidad_mesas, juego->mozo.tiene_mopa, &juego->dinero);
             matar_cucarachas(juego->mozo.posicion, juego->obstaculos, &juego->cantidad_obstaculos, juego->mozo.tiene_mopa);
             recolectar_monedas(juego->mozo.posicion, juego->herramientas, &juego->cantidad_herramientas, &juego->dinero, juego->mozo.tiene_mopa);
             recolectar_patines(juego->mozo.posicion, &juego->mozo.cantidad_patines, juego->herramientas, &juego->cantidad_herramientas, juego->mozo.tiene_mopa);
-            limpiar_charcos(juego->mozo.posicion, juego->mozo.tiene_mopa, juego->obstaculos, &juego->cantidad_obstaculos);
-            resbalar_charcos(juego->mozo.posicion, juego->mozo.bandeja, &juego->mozo.cantidad_bandeja, juego->obstaculos, juego->cantidad_obstaculos, juego->mesas, juego->cantidad_mesas);
-            entregar_pedido(juego->mozo.posicion, juego->mozo.bandeja, &juego->mozo.cantidad_bandeja, juego->mesas, juego->cantidad_mesas, juego->mozo.tiene_mopa, &juego->dinero);
-            interaccion_linguini_cocina(&juego->mozo, &juego->cocina);
         }
     }
 
@@ -1064,37 +1064,26 @@ void inicializar_juego(juego_t *juego) {
         - 'acción' debe ser válida.
    POST: Realizará la acción recibida por parámetro.*/
 void realizar_jugada(juego_t *juego, char accion) {
+    perdida_paciencia(juego->mesas, juego->cantidad_mesas, &juego->cocina, &juego->mozo);
+    perdida_paciencia_cucarachas(juego->obstaculos, juego->cantidad_obstaculos,juego->mesas, juego->cantidad_mesas);
+    preparacion_platos(&juego->cocina);
+    
+    inicializar_cucaracha(juego);
+    distribuir_comensales(juego->mesas, juego->cantidad_mesas, juego->movimientos);
+    asignar_paciencia(juego->mesas, juego->cantidad_mesas);
+
     if (juego->mozo.patines_puestos) {
         if (accion == MOPA) utilizar_mopa(juego);
         utilizar_patines(juego, accion);
-
-        distribuir_comensales(juego->mesas, juego->cantidad_mesas, juego->movimientos);
-        asignar_paciencia(juego->mesas, juego->cantidad_mesas);
-        perdida_paciencia(juego->mesas, juego->cantidad_mesas, &juego->cocina, &juego->mozo);
-        
-        preparacion_platos(&juego->cocina);
-        
-        inicializar_cucaracha(juego);
-        perdida_paciencia_cucarachas(juego->obstaculos, juego->cantidad_obstaculos,juego->mesas, juego->cantidad_mesas);
     } else {
         realizar_movimiento(juego, accion);
-
-        distribuir_comensales(juego->mesas, juego->cantidad_mesas, juego->movimientos);
-        asignar_paciencia(juego->mesas, juego->cantidad_mesas);
-        perdida_paciencia(juego->mesas, juego->cantidad_mesas, &juego->cocina, &juego->mozo);
-        entregar_pedido(juego->mozo.posicion, juego->mozo.bandeja, &juego->mozo.cantidad_bandeja, juego->mesas, juego->cantidad_mesas, juego->mozo.tiene_mopa, &juego->dinero);
-
-        preparacion_platos(&juego->cocina);
-        interaccion_linguini_cocina(&juego->mozo, &juego->cocina);
-
-        inicializar_cucaracha(juego);
-        matar_cucarachas(juego->mozo.posicion, juego->obstaculos, &juego->cantidad_obstaculos, juego->mozo.tiene_mopa);
-        perdida_paciencia_cucarachas(juego->obstaculos, juego->cantidad_obstaculos,juego->mesas, juego->cantidad_mesas);
-
-        recolectar_monedas(juego->mozo.posicion, juego->herramientas, &juego->cantidad_herramientas, &juego->dinero, juego->mozo.tiene_mopa);
-        recolectar_patines(juego->mozo.posicion, &juego->mozo.cantidad_patines, juego->herramientas, &juego->cantidad_herramientas, juego->mozo.tiene_mopa);
         limpiar_charcos(juego->mozo.posicion, juego->mozo.tiene_mopa, juego->obstaculos, &juego->cantidad_obstaculos);
         resbalar_charcos(juego->mozo.posicion, juego->mozo.bandeja, &juego->mozo.cantidad_bandeja, juego->obstaculos, juego->cantidad_obstaculos, juego->mesas, juego->cantidad_mesas);
+        interaccion_linguini_cocina(&juego->mozo, &juego->cocina);
+        entregar_pedido(juego->mozo.posicion, juego->mozo.bandeja, &juego->mozo.cantidad_bandeja, juego->mesas, juego->cantidad_mesas, juego->mozo.tiene_mopa, &juego->dinero);
+        matar_cucarachas(juego->mozo.posicion, juego->obstaculos, &juego->cantidad_obstaculos, juego->mozo.tiene_mopa);
+        recolectar_monedas(juego->mozo.posicion, juego->herramientas, &juego->cantidad_herramientas, &juego->dinero, juego->mozo.tiene_mopa);
+        recolectar_patines(juego->mozo.posicion, &juego->mozo.cantidad_patines, juego->herramientas, &juego->cantidad_herramientas, juego->mozo.tiene_mopa);
     }
 }
 
