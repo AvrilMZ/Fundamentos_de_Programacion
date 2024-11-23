@@ -508,7 +508,7 @@ void inicializar_cocina(juego_t *juego) {
     } while (!es_posicion_vacia(*juego, juego->cocina.posicion));
 }
 
-// POST: Reserva memoria dinamica para el vector 'platos_preparacion' de cocina e inicializa 'cantidad_preparacion'.
+// POST: Se inicializa 'cantidad_preparacion' y 'platos_preparacion'.
 void platos_en_preparacion(pedido_t **platos_preparacion, int *cantidad_preparacion) {
     *platos_preparacion = NULL;
     *cantidad_preparacion = 0;
@@ -529,7 +529,7 @@ void agregar_plato_preparacion(pedido_t **platos_preparacion, int *cantidad_prep
     (*cantidad_preparacion)++;
 }
 
-// POST: Reserva memoria dinamica para el vector 'platos_listos' de cocina e inicializa 'cantidad_listos'.
+// POST: Se inicializa 'cantidad_listos' y 'platos_listos'.
 void platos_listos(pedido_t **platos_listos, int *cantidad_listos) {
     *platos_listos = NULL;
     *cantidad_listos = 0;
