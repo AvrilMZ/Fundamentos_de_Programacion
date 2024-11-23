@@ -27,11 +27,11 @@ bool es_accion_valida(char accion) {
 
 // POST: Solicita la interacción al usuario preguntando nuevamente si esta no es válida.
 void accion_usuario(char* accion) {
-    printf("Ingrese un movimiento (W/S/A/D), interactúa con la mopa (O), usa los patines (P), ó toma pedidos (T):\n");
+    printf("Ingrese un movimiento (%c/%c/%c/%c), interactúa con la mopa (%c), usa los patines (%c), ó toma pedidos (%c):\n", ARRIBA, ABAJO, DERECHA, IZQUIERDA, MOPA, USAR_PATINES, TOMAR_PEDIDO);
     scanf(" %c", accion);
 
     while (!es_accion_valida(*accion)) {
-        printf("Movimiento invalido. Ingrese un movimiento (W/S/A/D), interactúa con la mopa (O), usa los patines (P), ó toma pedidos (T):\n");
+        printf("Movimiento invalido. Ingrese un movimiento (%c/%c/%c/%c), interactúa con la mopa (%c), usa los patines (%c), ó toma pedidos (%c):\n", ARRIBA, ABAJO, DERECHA, IZQUIERDA, MOPA, USAR_PATINES, TOMAR_PEDIDO);
         scanf(" %c", accion);
     }
 }
