@@ -14,12 +14,13 @@
 #define NORMAL "\e[0m"
 #define MOPA_EMOJI "\U0001F9F9"
 #define PATINES_EMOJI "\U000026F8"
+#define PACIENCIA_EMOJI "\U000023F3"
 #define PEDIDOS_TOMADOS_EMOJI "\U0001F4CB"
 #define PEDIDOS_PREPARACION_EMOJI "\U0001F373"
 #define PEDIDOS_LISTOS_EMOJI "\U0001F37D"
 #define PEDIDOS_ENTREGAR_EMOJI "\U0001F4E6"
 #define MOVIMIENTOS_EMOJI "\U0001F6B6"
-#define DINERO_EMOJI "\U0001F4CB"
+#define DINERO_EMOJI "\U0001F4B0"
 
 #define ARRIBA 'W'
 #define ABAJO 'S'
@@ -1020,6 +1021,16 @@ void informacion_util(juego_t juego) {
     if (juego.mozo.cantidad_patines == 0) printf("No tenés patines.\n");
     else if (juego.mozo.cantidad_patines == 1) printf("Tenés %i par de patines.\n", juego.mozo.cantidad_patines);
     else printf("Tenés %i pares de patines.\n", juego.mozo.cantidad_patines);
+
+    printf("\n%s--- Paciencia de las Mesas ---%s\n", ITALICA, NORMAL);
+    bool hay_comensales = false;
+    for (int i = 0; i < juego.cantidad_mesas; i++) {
+        if (juego.mesas[i].cantidad_comensales > 0) {
+            printf("%s Mesa %d: Paciencia %d\n", PACIENCIA_EMOJI, i + 1, juego.mesas[i].paciencia);
+            hay_comensales = true;
+        }
+    }
+    if (!hay_comensales) printf("No hay mesas con comensales\n");
 
     printf("\n%s--- Estado de Pedidos ---%s\n", ITALICA, NORMAL);
     printf("%s Pedidos tomados: %i\n", PEDIDOS_TOMADOS_EMOJI, juego.mozo.cantidad_pedidos);
