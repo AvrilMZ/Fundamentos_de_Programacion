@@ -343,7 +343,14 @@ void distribuir_comensales(mesa_t mesas[MAX_MESAS], int tope_mesas, int movimien
         bool lugares_asignados = false;
 
         for (int i = 0; i < tope_mesas && !lugares_asignados; i++) {
-            if (mesas[i].cantidad_lugares >= comensales_sin_asiento && mesas[i].cantidad_comensales == 0) {
+            if (mesas[i].cantidad_lugares <= CANTIDAD_LUGARES_MESA_INDIVIDUAL && mesas[i].cantidad_comensales == 0 && mesas[i].cantidad_lugares >= comensales_sin_asiento) {
+                mesas[i].cantidad_comensales = comensales_sin_asiento;
+                lugares_asignados = true;
+            }
+        }
+
+        for (int i = 0; i < tope_mesas && !lugares_asignados; i++) {
+            if (mesas[i].cantidad_lugares > CANTIDAD_LUGARES_MESA_INDIVIDUAL && mesas[i].cantidad_comensales == 0 && mesas[i].cantidad_lugares >= comensales_sin_asiento) {
                 mesas[i].cantidad_comensales = comensales_sin_asiento;
                 lugares_asignados = true;
             }
@@ -483,7 +490,7 @@ void platos_en_preparacion(pedido_t **platos_preparacion, int *cantidad_preparac
    POST: Agrega un plato a la lista de platos en preparación reservando la cantidad de memoria dinamica correspondiente.*/
 void agregar_plato_preparacion(pedido_t **platos_preparacion, int *cantidad_preparacion, pedido_t nuevo_plato) {
     size_t nueva_cantidad = (size_t)(*cantidad_preparacion + 1);
-    pedido_t *pedido_a_dejar = (pedido_t *)realloc(*platos_preparacion, sizeof(pedido_t) * nueva_cantidad);
+    pedido_t *pedido_a_dejar = realloc(*platos_preparacion, sizeof(pedido_t) * nueva_cantidad);
     if (pedido_a_dejar == NULL) {
         printf("%s\n", ERROR_RESERVAR_MEMORIA);
         return;
@@ -502,15 +509,19 @@ void eliminar_plato_preparacion(pedido_t **platos_preparacion, int *cantidad_pre
     for (int i = indice; i < *cantidad_preparacion - 1; i++) {
         (*platos_preparacion)[i] = (*platos_preparacion)[i + 1];
     }
-
     (*cantidad_preparacion)--;
-    pedido_t *pedido_a_dejar = (pedido_t *)realloc(*platos_preparacion, sizeof(pedido_t) * (size_t)(*cantidad_preparacion));
-    if (pedido_a_dejar == NULL && *cantidad_preparacion > 0) {
-        printf("%s\n", ERROR_RESERVAR_MEMORIA);
-        return;
-    }
 
-    *platos_preparacion = pedido_a_dejar;
+    if (*cantidad_preparacion > 0) {
+        pedido_t *pedido_a_dejar = realloc(*platos_preparacion, sizeof(pedido_t) * (size_t)(*cantidad_preparacion));
+        if (pedido_a_dejar == NULL) {
+            printf("%s\n", ERROR_RESERVAR_MEMORIA);
+            return;
+        }
+        *platos_preparacion = pedido_a_dejar;
+    } else {
+        free(*platos_preparacion);
+        *platos_preparacion = NULL;
+    }
 }
 
 // POST: Se inicializa 'cantidad_listos' y 'platos_listos'.
@@ -523,7 +534,7 @@ void platos_listos(pedido_t **platos_listos, int *cantidad_listos) {
    POST: Agrega un plato a la lista de platos listos reservando la cantidad de memoria dinamica correspondiente.*/
 void agregar_plato_listo(pedido_t **platos_listos, int *cantidad_listos, pedido_t nuevo_plato) {
     size_t nueva_cantidad = (size_t)(*cantidad_listos + 1);
-    pedido_t *pedido_a_recolectar = (pedido_t *)realloc(*platos_listos, sizeof(pedido_t) * nueva_cantidad);
+    pedido_t *pedido_a_recolectar = realloc(*platos_listos, sizeof(pedido_t) * nueva_cantidad);
     if (pedido_a_recolectar == NULL) {
         printf("%s\n", ERROR_RESERVAR_MEMORIA);
         return;
@@ -542,15 +553,19 @@ void eliminar_plato_listo(pedido_t **platos_listos, int *cantidad_listos, int in
     for (int i = indice; i < *cantidad_listos - 1; i++) {
         (*platos_listos)[i] = (*platos_listos)[i + 1];
     }
-
     (*cantidad_listos)--;
-    pedido_t *pedido_a_recolectar = (pedido_t *)realloc(*platos_listos, sizeof(pedido_t) * (size_t)(*cantidad_listos));
-    if (pedido_a_recolectar == NULL && *cantidad_listos > 0) {
-        printf("%s\n", ERROR_RESERVAR_MEMORIA);
-        return;
-    }
 
-    *platos_listos = pedido_a_recolectar;
+    if (*cantidad_listos > 0) {
+        pedido_t *pedido_a_recolectar = realloc(*platos_listos, sizeof(pedido_t) * (size_t)(*cantidad_listos));
+        if (pedido_a_recolectar == NULL) {
+            printf("%s\n", ERROR_RESERVAR_MEMORIA);
+            return;
+        }
+        *platos_listos = pedido_a_recolectar;
+    } else {
+        free(*platos_listos);
+        *platos_listos = NULL;
+    }
 }
 
 /* PRE: - 'posicion' en 'mozo' debe ser valida;
@@ -560,8 +575,7 @@ void eliminar_plato_listo(pedido_t **platos_listos, int *cantidad_listos, int in
             - 'mozo' le pasa los elementos de su vector 'pedidos' a 'cocina' en 'platos_preparacion';
             - 'cocina' le pasa los elementos de su vector 'platos_listos' a 'mozo' en 'bandeja'.*/
 void interaccion_linguini_cocina(mozo_t *mozo, cocina_t *cocina) {
-    if (mozo->tiene_mopa) return;
-    if (!son_posiciones_iguales(mozo->posicion, cocina->posicion)) return;
+    if (mozo->tiene_mopa || !son_posiciones_iguales(mozo->posicion, cocina->posicion)) return;
 
     if (mozo->cantidad_pedidos > 0) {
         for (int i = 0; i < mozo->cantidad_pedidos; i++) {
@@ -712,9 +726,9 @@ void perdida_paciencia_cucarachas(objeto_t obstaculos[MAX_OBSTACULOS], int tope_
                 for (int k = 0; k < mesas[j].cantidad_lugares; k++) {
                     if (mesas[j].cantidad_comensales > 0 && distancia_manhattan(mesas[j].posicion[k], posicion_cucaracha) <= DISTANCIA_MESA_CUCARACHA) {
                         mesas[j].paciencia -= DISMINUCION_PACIENCIA_CUCARACHA;
-                        if (mesas[i].paciencia <= 0) {
-                            mesas[i].cantidad_comensales = 0;
-                            mesas[i].pedido_tomado = false;
+                        if (mesas[j].paciencia <= 0) {
+                            mesas[j].cantidad_comensales = 0;
+                            mesas[j].pedido_tomado = false;
                             for (int j = 0; j < mozo->cantidad_pedidos; j++) {
                                 if (mozo->pedidos[j].id_mesa == mesas[i].posicion[0].fil * MAX_COLUMNAS + mesas[i].posicion[0].col) {
                                     eliminar_pedido(mozo->pedidos, &mozo->cantidad_pedidos, j);
