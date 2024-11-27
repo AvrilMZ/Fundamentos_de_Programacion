@@ -253,7 +253,9 @@ bool pasillos_libres(mesa_t mesas[MAX_MESAS], int tope_mesas, coordenada_t mesa_
 /* PRE: El tope 'cantidad_mesas' de 'mesas' dentro de 'juego' debe estar correctamente inicializado.
    POST: Inicializa todas las mesas individuales en una posición aleatoria, si la posición ya está ocupada le asigna nuevamente otra aleatoria.*/
 void inicializar_mesa_individual(juego_t *juego) {
-    for (int i = 0; i < MAX_MESAS_INDIVIDUALES; i++) {
+    int inicio = juego->cantidad_mesas;
+    int fin = inicio + MAX_MESAS_INDIVIDUALES;
+    for (int i = inicio; i < fin; i++) {
         juego->mesas[i].cantidad_lugares = 0;
         juego->mesas[i].cantidad_comensales = 0;
         juego->mesas[i].paciencia = 0;
@@ -306,7 +308,9 @@ bool posible_posiciones_mesa_grupal(juego_t *juego, int indice_mesa, coordenada_
 /* PRE: El tope 'cantidad_mesas' de 'mesas' dentro de 'juego' debe estar correctamente inicializado.
    POST: Inicializa todas las mesas grupales en una posición aleatoria, si la posición ya está ocupada le asigna nuevamente otra aleatoria.*/
 void inicializar_mesa_grupal(juego_t *juego) {
-    for (int i = MAX_MESAS_INDIVIDUALES; i < (MAX_MESAS_GRUPALES + MAX_MESAS_INDIVIDUALES); i++) {
+    int inicio = juego->cantidad_mesas;
+    int fin = inicio + MAX_MESAS_GRUPALES;
+    for (int i = inicio; i < fin; i++) {
         juego->mesas[i].cantidad_lugares = 0;
         juego->mesas[i].cantidad_comensales = 0;
         juego->mesas[i].paciencia = 0;
@@ -1141,13 +1145,7 @@ void inicializar_juego(juego_t *juego) {
         - 'acción' debe ser válida.
    POST: Realizará la acción recibida por parámetro.*/
 void realizar_jugada(juego_t *juego, char accion) {
-    perdida_paciencia(juego->mesas, juego->cantidad_mesas, &juego->cocina, &juego->mozo);
-    perdida_paciencia_cucarachas(juego->obstaculos, juego->cantidad_obstaculos,juego->mesas, juego->cantidad_mesas, &juego->cocina, &juego->mozo);
     preparacion_platos(&juego->cocina);
-    
-    inicializar_cucaracha(juego);
-    distribuir_comensales(juego->mesas, juego->cantidad_mesas, juego->movimientos);
-    asignar_paciencia(juego->mesas, juego->cantidad_mesas);
 
     if (juego->mozo.patines_puestos) {
         if (accion == MOPA) utilizar_mopa(juego);
@@ -1162,6 +1160,12 @@ void realizar_jugada(juego_t *juego, char accion) {
         recolectar_monedas(juego->mozo.posicion, juego->herramientas, &juego->cantidad_herramientas, &juego->dinero, juego->mozo.tiene_mopa);
         recolectar_patines(juego->mozo.posicion, &juego->mozo.cantidad_patines, juego->herramientas, &juego->cantidad_herramientas, juego->mozo.tiene_mopa);
     }
+
+    perdida_paciencia(juego->mesas, juego->cantidad_mesas, &juego->cocina, &juego->mozo);
+    perdida_paciencia_cucarachas(juego->obstaculos, juego->cantidad_obstaculos,juego->mesas, juego->cantidad_mesas, &juego->cocina, &juego->mozo);
+    inicializar_cucaracha(juego);
+    distribuir_comensales(juego->mesas, juego->cantidad_mesas, juego->movimientos);
+    asignar_paciencia(juego->mesas, juego->cantidad_mesas);
 }
 
 /* PRE: El juego deberá estar inicializado previamente con `inicializar_juego`
