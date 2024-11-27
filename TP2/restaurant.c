@@ -259,13 +259,11 @@ void inicializar_mesa_individual(juego_t *juego) {
         juego->mesas[i].paciencia = 0;
         juego->mesas[i].pedido_tomado = false;
 
-        int intentos = 0;
+        coordenada_t posicion;
         do {
-            juego->mesas[i].posicion[0] = posicion_aleatoria();
-            intentos++;
-            if (intentos >= (MAX_FILAS * MAX_COLUMNAS)) return;
-        } while (!es_posicion_vacia(*juego, juego->mesas[i].posicion[0]) || !pasillos_libres(juego->mesas, juego->cantidad_mesas, juego->mesas[i].posicion[0]));
-
+            posicion = posicion_aleatoria();
+        } while (!es_posicion_vacia(*juego, posicion) || !pasillos_libres(juego->mesas, juego->cantidad_mesas, posicion));
+        juego->mesas[i].posicion[0] = posicion;
         juego->mesas[i].cantidad_lugares = CANTIDAD_LUGARES_MESA_INDIVIDUAL;
         juego->cantidad_mesas++;
     }
@@ -315,12 +313,8 @@ void inicializar_mesa_grupal(juego_t *juego) {
         juego->mesas[i].pedido_tomado = false;
 
         coordenada_t posicion_guia;
-
-        int intentos = 0;
         do {
             posicion_guia = posicion_aleatoria();
-            intentos++;
-            if (intentos >= ((MAX_FILAS * MAX_COLUMNAS) - (MAX_FILAS + MAX_COLUMNAS))) return;
         } while (posicion_guia.fil == MAX_FILAS - 1 || posicion_guia.col == MAX_COLUMNAS - 1 || !posible_posiciones_mesa_grupal(juego, i, posicion_guia));
 
         juego->cantidad_mesas++;
@@ -378,12 +372,11 @@ void inicializar_linguini(juego_t *juego) {
     juego->mozo.tiene_mopa = false;
     juego->mozo.patines_puestos = false;
 
-    int intentos = 0;
+    coordenada_t posicion;
     do {
-        juego->mozo.posicion = posicion_aleatoria();
-        intentos++;
-        if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return;
-    } while (!es_posicion_vacia(*juego, juego->mozo.posicion));
+        posicion = posicion_aleatoria();
+    } while (!es_posicion_vacia(*juego, posicion));
+    juego->mozo.posicion = posicion;
 }
 
 /* PRE: 'cantidad_pedidos' debe estar inicializado.
@@ -472,12 +465,11 @@ void inicializar_cocina(juego_t *juego) {
     juego->cocina.cantidad_preparacion = 0;
     juego->cocina.cantidad_listos = 0;
     
-    int intentos = 0;
+    coordenada_t posicion;
     do {
-        juego->cocina.posicion = posicion_aleatoria();
-        intentos++;
-        if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return;
-    } while (!es_posicion_vacia(*juego, juego->cocina.posicion));
+        posicion = posicion_aleatoria();
+    } while (!es_posicion_vacia(*juego, posicion));
+    juego->cocina.posicion = posicion;
 }
 
 // POST: Se inicializa 'cantidad_preparacion' y 'platos_preparacion'.
@@ -657,13 +649,9 @@ void perdida_paciencia(mesa_t mesas[MAX_MESAS], int tope_mesas, cocina_t *cocina
    POST: Inicializa una herramienta en una posicion aleatoria, si esta ya está ocupada le asigna nuevamente otra aleatoria.*/
 void inicializar_herramienta(juego_t *juego, char tipo_herramienta, int cantidad_herramienta) {
     coordenada_t posicion;
-
     for (int i = 0; i < cantidad_herramienta; i++) {
-        int intentos = 0;
         do {
             posicion = posicion_aleatoria();
-            intentos++;
-            if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return;
         } while (!es_posicion_vacia(*juego, posicion));
 
         juego->herramientas[juego->cantidad_herramientas].tipo = tipo_herramienta;
@@ -677,13 +665,9 @@ void inicializar_herramienta(juego_t *juego, char tipo_herramienta, int cantidad
    POST: Inicializa la cantidad de charcos pasada en una posición aleatoria, si esta ya está ocupada le asigna nuevamente otra aleatoria.*/
 void inicializar_charco(juego_t *juego, int cantidad_obstaculo) {
     coordenada_t posicion;    
-
     for (int i = 0; i < cantidad_obstaculo; i++) {
-        int intentos = 0;
         do {
             posicion = posicion_aleatoria();
-            intentos++;
-            if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return; 
         } while (!es_posicion_vacia(*juego, posicion));
 
         juego->obstaculos[juego->cantidad_obstaculos].tipo = CHARCO;
@@ -698,12 +682,8 @@ void inicializar_charco(juego_t *juego, int cantidad_obstaculo) {
 void inicializar_cucaracha(juego_t *juego) {
     if (juego->movimientos % APARICION_CUCARACHAS == 0 && juego->movimientos > 0) {
         coordenada_t posicion;
-        int intentos = 0;
-
         do {
             posicion = posicion_aleatoria();
-            intentos++;
-            if (intentos > (MAX_FILAS * MAX_COLUMNAS)) return; 
         } while (!es_posicion_vacia(*juego, posicion));
 
         juego->obstaculos[juego->cantidad_obstaculos].tipo = CUCARACHA;
