@@ -2,8 +2,8 @@
 Nota: Tener en cuenta que el contenido completo del archivo puede ser más grande que la memoria de la computadora. 
 Utilizar archivo.read(bytes) para leer como máximo una cantidad determinada de bytes.'''
 
-MODO_LECTURA_TEXTO = "r"
-MODO_ESCRITURA_TEXTO = "w"
+MODO_LECTURA_TEXTO = 'r'
+MODO_ESCRITURA_TEXTO = 'w'
 MODO_LECTURA_BINARIO = "rb"
 MODO_ESCRITURA_BINARIO = "wb"
 
