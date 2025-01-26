@@ -9,23 +9,20 @@ MODO_ESCRITURA_BINARIO = "wb"
 
 def cp(nombre_archivo, archivo_copia, es_binario):
     kilobyte = 1024
-    try:
-        if es_binario:
+    
+    if es_binario:
             modo_lectura = MODO_LECTURA_BINARIO
             modo_escritura = MODO_ESCRITURA_BINARIO
-        else:
-            modo_lectura = MODO_LECTURA_TEXTO
-            modo_escritura = MODO_ESCRITURA_TEXTO
+    else:
+        modo_lectura = MODO_LECTURA_TEXTO
+        modo_escritura = MODO_ESCRITURA_TEXTO
 
-        with open(nombre_archivo, modo_lectura) as archivo:
-            try:
-                with open(archivo_copia, modo_escritura) as copia:
-                    bloque = archivo.read(kilobyte)
-                    while bloque:
-                        copia.write(bloque)
-                        bloque = archivo.read(kilobyte)
-            except:
-                print(f"Error al abrir el archivo {archivo_copia}")
+    try:
+        with open(nombre_archivo, modo_lectura) as archivo, open(archivo_copia, modo_escritura) as copia:
+            bloque = archivo.read(kilobyte)
+            while bloque:
+                copia.write(bloque)
+                bloque = archivo.read(kilobyte)
     except:
         print(f"Error al abrir el archivo {nombre_archivo}")
 
