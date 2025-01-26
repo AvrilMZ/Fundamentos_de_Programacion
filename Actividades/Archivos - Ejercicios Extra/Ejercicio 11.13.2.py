@@ -27,7 +27,6 @@ def cp(nombre_archivo, archivo_copia, es_binario):
         print(f"Error al abrir el archivo {nombre_archivo}")
 
 
-''' 
------- SIN USAR READ() ------
-No es adecuado porque los archivos binarios no se pueden tratar como cadenas de texto, por lo que no se puede usar "for" y habria que usar funciones como iter().
-'''
+# ------ SIN USAR READ() ------
+# No es adecuado porque los archivos binarios no se pueden tratar como cadenas de texto, por lo que no se puede usar "for" y habria que usar funciones como iter().
+
