@@ -17,7 +17,7 @@ char consulta_calidad() {
     bool es_caracter_valido = false;
     char calidad_ingresada = ' ';
     while (!es_caracter_valido) {
-        printf("¿De que calidad quiere sus ruedas? (Ingrese 'E', 'N' ó 'B')\n");
+        printf("¿De que calidad quiere sus ruedas? (Ingrese '%c', '%c' ó '%c')\n", CALIDAD_EXCELENTE, CALIDAD_ESTANDAR, CALIDAD_BAJA);
         scanf(" %c", &calidad_ingresada);
         if (calidad_ingresada == CALIDAD_EXCELENTE || calidad_ingresada == CALIDAD_ESTANDAR || calidad_ingresada == CALIDAD_BAJA) es_caracter_valido = true;
     }
@@ -62,7 +62,7 @@ bool es_cambio_personalizado() {
     bool es_caracter_valido = false;
     char respuesta_ingresada = ' ';
     while (!es_caracter_valido) {
-        printf("¿Quiere un cambio de ruedas personalizado? (Ingrese S ó X)\n");
+        printf("¿Quiere un cambio de ruedas personalizado? (Ingrese %c ó %c)\n", SI, NO);
         scanf(" %c", &respuesta_ingresada);
         if (respuesta_ingresada == SI || respuesta_ingresada == NO) es_caracter_valido = true;
     }
