@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "Clase_04_Ejercicio_1.h"
+#include "Clase_04_Ej1.h"
 
 const int MIN_CANTIDAD_TESOROS_FALSOS = 5;
 

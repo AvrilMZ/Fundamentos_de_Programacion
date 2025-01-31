@@ -1,5 +1,5 @@
 #include <stdbool.h>
-#include "Clase_04_Ejercicio_1.h"
+#include "Clase_04_Ej1.h"
 
 const char CESPED = 'C';
 const char TESORO_FALSO = 'F';
