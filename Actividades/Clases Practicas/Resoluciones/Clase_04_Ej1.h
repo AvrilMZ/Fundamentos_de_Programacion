@@ -1,4 +1,4 @@
-#ifndef CLASE_04_EJE1_H
+#ifndef CLASE_04_EJ1_H
 #define CLASE_04_EJ1_H
 
 #define MAX_FILAS 10

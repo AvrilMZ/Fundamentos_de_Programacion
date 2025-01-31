@@ -27,6 +27,8 @@ typedef struct tesoro {
     bool desenterrado;
 } tesoro_t;
 
+/* PRE: 'tesoro' debe estar inicializado.
+   POST: Devuelve el valor total del tesoro, teniendo en cuenta el valor de las monedas y joyas.*/
 int cotizacion(tesoro_t tesoro) {
     int valor_total = 0;
     for (int i = 0; i < tesoro.tope_monedas; i++) {
@@ -42,6 +44,8 @@ int cotizacion(tesoro_t tesoro) {
     return valor_total;
 }
 
+/* PRE: 'tesoro' debe estar inicializado.
+   POST: Agrega 'moneda' al final de arreglo de 'monedas' en 'tesoro', si es que el tope no llego al máximo.*/
 void guardar_monedas(tesoro_t* tesoro, moneda_t moneda) {
     if (tesoro->tope_monedas < MAX_MONEDAS) {
         tesoro->monedas[tesoro->tope_monedas] = moneda;
