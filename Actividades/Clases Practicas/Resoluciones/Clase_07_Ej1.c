@@ -1,18 +1,3 @@
-/*La misión de Mr. Increíble consiste en escapar del cuartel de Síndrome. Pero es medio complicado dado que en cada habitación a la que entra, hay muchos muebles que tiene que destruir para avanzar como también hay un teletransportador que lo manda a otra
-habitación que puede o no ser contigua.
-Se sabe que la salida está en la posición (5, 4) y que la entrada está en la posición (0, 0).
-
-Se tiene la siguiente estructura:
-typedef struct habitacion{
-    int fil_sig_habitacion;
-    int col_sig_habitacion;
-    int cantidad_muebles;
-} habitacion_t;
-
-Dada una matriz de habitaciones que representa el cuartel de Síndrome:
-    a) Crear una función recursiva que cuente la cantidad de habitaciones que recorre Mr. Increíble hasta que logra salir del cuartel.
-    b) Crear una función recursiva que devuelva la fila y la columna de la habitación por la que pasó Mr. Increíble y tuvo que destruir más muebles.*/
-
 #define MAX_FIL 10
 #define MAX_COL 10
 const int SALIDA_X = 5;
