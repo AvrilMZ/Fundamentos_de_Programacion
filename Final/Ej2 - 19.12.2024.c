@@ -18,11 +18,8 @@ typedef struct portal {
 // PRE: 'fila' y 'columna' deben ser cero inicialmente y 'portales' debe estar inicializado.
 // POST: Devuelve true si en una cantidad de 'MAX_PORTALES' encontraron recursivamente una posicion de 'portales' cuyo 'nombre_lugar' sea igual a 'CASA', de lo contrario devuelve false.
 bool pudieron_volver(portal_t portales[MAX_FILAS][MAX_COLUMNAS], int fila, int columna, int nro_portal) {
-    if(strcmp(portales[fila][columna].nombre_lugar, CASA) == 0)
-        return true;
-
-    if(nro_portal >= MAX_PORTALES) 
-        return false;
+    if(strcmp(portales[fila][columna].nombre_lugar, CASA) == 0) return true;
+    if(nro_portal >= MAX_PORTALES) return false;
 
     return pudieron_volver(portales, portales[fila][columna].fila_siguiente, portales[fila][columna].col_siguiente, nro_portal + 1);
 }
