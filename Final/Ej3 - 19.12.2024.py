@@ -40,7 +40,7 @@ def canciones_cool(file_canciones):
         duracion = int(can[INDICE_DURACION])
         artista = can[INDICE_ARTISTA]
         calificacion = int(can[INDICE_CALIF])
-        if artista == ARTISTA_FAV or ((TRISTE not in titulo) and (duracion < DURACION_MAX) and (genero in GENEROS_FAV) and (calificacion > CALIFICACION_MIN))
+        if artista == ARTISTA_FAV or ((TRISTE not in titulo) and (duracion < DURACION_MAX) and (genero in GENEROS_FAV) and (calificacion > CALIFICACION_MIN)):
             cool.writerow(can)
 
     f_canciones.close()
@@ -61,7 +61,7 @@ if __name__ == "__main__":
             int maximo;                 // indica la cantidad maxima de elementos posibles sin que sobrepase la capacidad de la memoria.
             dato_t* arreglo;            // contiene la informacion principal del vector, estando tambien reservada en memoria.
         } vector_dinamico_t;
-        
+
     El struct 'lista_enlazada_t' deberia tener:
         typedef struct nodo {
             dato_t dato;                // contiene la informacion principal del vector.
